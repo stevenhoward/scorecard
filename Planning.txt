@@ -1,0 +1,14 @@
+Minimum viable feature: I want an interactive base diagram where I can enter
+anything I'd usually put into a box on the score card. I couldn't think of a
+good thing to call the box itself in the code, so I settled on PlateAppearance
+(though it's really the plate-appearance plus baserunning).
+
+When I click on a base line, I should get a list of options for what gets
+recorded there. This could be a modal dialog, but on mobile I'm really liking
+the idea of a gesture-based interface. (Perhaps a mode that's specific to
+entering the current inning, and a separate mode for viewing the whole card).
+
+Click 1st-base line
+* Hit/walk/error/HBP: fill line to first
+* Out: select defenders from a diagram, or use keyboard
+
