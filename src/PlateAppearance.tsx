@@ -1,4 +1,5 @@
 import React, { Component, CSSProperties, ReactNode } from 'react';
+import SelectFielder from './SelectFielder';
 
 interface SelectionProps {
 
@@ -99,7 +100,7 @@ function Dialog(props: DialogProps) {
     borderRadius: 3,
     padding: 20,
     width: 300,
-    height: 300,
+    minHeight: 300,
     margin: '0 auto',
   };
 
@@ -113,6 +114,77 @@ function Dialog(props: DialogProps) {
       </div>
     </div>
   );
+}
+
+interface OutcomeSelectorProps {
+  base: number;
+  onSelectOutcome: (symbol_: string) => void;
+}
+
+interface OutcomeSelectorState {
+  selectFielder: boolean;
+}
+
+class OutcomeSelector extends Component<OutcomeSelectorProps, OutcomeSelectorState> {
+  constructor(props: OutcomeSelectorProps) {
+    super(props);
+    this.state = { selectFielder: false };
+  }
+
+  render() {
+    const noOuts: [string, string][] = [];
+    if (this.props.base === 0) {
+      noOuts.push(
+        ['1B', 'Single'],
+        ['2B', 'Double'],
+        ['3B', 'Triple'],
+        ['HR', 'Home Run'],
+        ['HBP', 'Hit by Pitch'],
+      );
+    }
+    else {
+      noOuts.push(
+        ['SB', 'Stolen Base'],
+      )
+    }
+
+    noOuts.push(['BB', 'Base on balls']);
+
+    const outs: [string, string][] = [];
+    if (this.props.base === 0) {
+      outs.push(
+        ['K', 'Strikeout swinging'],
+        [unescape('%uA4D8'), 'Strikeout looking'],
+      );
+    }
+
+    const selector = (symbol_: string) => () => this.props.onSelectOutcome(symbol_);
+
+    if (this.state.selectFielder) {
+      const onSubmit = (fielder: string) => this.props.onSelectOutcome('E' + fielder);
+      return <SelectFielder singleOnly={true} onSubmit={onSubmit} />
+    }
+
+    return (
+      <div style={{textAlign: 'left'}}>
+        <fieldset>
+          <legend>No outs</legend>
+          <ul>
+            {noOuts.map(([symbol_, label]) => <li onClick={selector(symbol_)}>{label}</li>)}
+
+            <li onClick={() => this.setState({selectFielder: true})}>Error</li>
+          </ul>
+        </fieldset>
+
+        <fieldset>
+          <legend>Outs</legend>
+          <ul>
+            {outs.map(([symbol_, label]) => <li onClick={selector(symbol_)}>{label}</li>)}
+          </ul>
+        </fieldset>
+      </div>
+    );
+  }
 }
 
 interface PlateAppearanceProps {}
@@ -137,7 +209,7 @@ export default class PlateAppearance extends Component<PlateAppearanceProps, Pla
     };
   }
 
-  closeDialog(){
+  closeDialog() {
     this.setState({ dialogVisible: false, dialogContents: null });
   }
 
@@ -150,18 +222,7 @@ export default class PlateAppearance extends Component<PlateAppearanceProps, Pla
       self.closeDialog();
     }
 
-    const selector = (outcome: string) => () => onSelectOutcome(outcome);
-
-    const dialogContents = (
-      <ul>
-        <li onClick={selector('1B')}>Single</li>
-        <li onClick={selector('2B')}>Double</li>
-        <li onClick={selector('3B')}>Triple</li>
-        <li onClick={selector('HR')}>Home Run</li>
-        <li onClick={selector('BB')}>Base on Balls</li>
-      </ul>
-    );
-
+    const dialogContents = <OutcomeSelector base={base} onSelectOutcome={onSelectOutcome} />;
     this.setState({ dialogVisible: true, dialogContents: dialogContents });
   }
 
@@ -169,7 +230,8 @@ export default class PlateAppearance extends Component<PlateAppearanceProps, Pla
     const basePaths = this.state.basepaths.map(props => <BasePath {...props} />);
     return (
       <React.Fragment>
-        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="110" height="100"
+          className="base-path-diagram">
           {basePaths}
         </svg>
         <Dialog visible={this.state.dialogVisible} onClose={() => this.closeDialog()}>

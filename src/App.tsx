@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PlateAppearance from './PlateAppearance';
+import SelectFielder from './SelectFielder';
 import './App.css';
 
 /*
@@ -147,6 +148,7 @@ class App extends Component {
     return (
       <div className="App">
         <PlateAppearance />
+        <SelectFielder onSubmit={() => {}}/>
       </div>
     );
   }
