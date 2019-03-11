@@ -1,7 +1,8 @@
-import React, {Component} from 'react';
+import React, {Component, ReactNode} from 'react';
 import SelectFielder from './SelectFielder';
+import Dialog from './Dialog';
 
-type OptionResultHandler = (symbol_: string, outs: number) => void;
+type OptionResultHandler = (fielders: string) => void;
 
 export interface SelectedOutcome {
   shorthand: string;
@@ -10,19 +11,52 @@ export interface SelectedOutcome {
 }
 
 interface PlaySelectionOptionProps {
-  symbol_: string;
+  // Displayed label for this option
   label: string;
-  outs: number;
-  //fielderInputs: 'none' | 'one' | 'many';
+
+  // undefined: no fielder input needed
+  // 'one': select a single fielder, e.g. for a flyout.
+  // 'many': select an arbitrary sequence of fielders, e.g. 6-4-3 for a DP.
+  fielderInputs?: 'one' | 'many';
+
   onResult: OptionResultHandler;
 }
 
-function PlaySelectionOption(props: PlaySelectionOptionProps) {
-  return (
-    <li onClick={() => props.onResult(props.symbol_, props.outs)}>
-      {props.label}
-    </li>
-  );
+interface PlaySelectionOptionState {
+  showFielderSelector: boolean;
+}
+
+class PlaySelectionOption extends Component<PlaySelectionOptionProps, PlaySelectionOptionState> {
+  constructor(props: PlaySelectionOptionProps) {
+    super(props);
+    this.state = { showFielderSelector: false };
+  }
+
+  private handleClick() {
+    if (this.props.fielderInputs === undefined) {
+      // If there are no fielder inputs, we're done.
+      this.props.onResult('');
+    }
+    else {
+      this.setState({ showFielderSelector: true });
+    }
+  }
+
+  render() {
+    return (
+      <React.Fragment>
+        <li onClick={() => this.handleClick()}>
+          <a href="javascript: void(0)">{this.props.label}</a>
+
+        </li>
+        <Dialog visible={this.state.showFielderSelector}
+          onClose={() => this.setState({showFielderSelector: false})}>
+          <SelectFielder allowMultiple={this.props.fielderInputs === 'many'}
+                         onFielderSelected={this.props.onResult} />
+        </Dialog>
+      </React.Fragment>
+    );
+  }
 }
 
 interface OutcomeSelectorProps {
@@ -53,64 +87,65 @@ export default class OutcomeSelector extends Component<OutcomeSelectorProps, Out
   // computes and returns a list of actions from this basepath that do result in
   // an out and don't require a player input
   private *generateOutsOptions() {
-    const cb = (reached: boolean) =>
-      (symbol_: string, outs: number) =>
+    const cb = (symbol_: string, outs: number, reached: boolean) =>
+      () =>
         this.props.onSelectOutcome({ shorthand: symbol_, outs: outs, reached: reached });
 
     if (this.props.base === 0) {
-      yield <PlaySelectionOption symbol_="K" label="Strikeout swinging" outs={1} onResult={cb(false)} />;
-      yield <PlaySelectionOption symbol_={unescape("%uA4D8")} label="Strikeout looking" outs={1} onResult={cb(false)} />;
-      yield <PlaySelectionOption symbol_="FC" label="Fielder's Choice" outs={1} onResult={cb(true)} />;
-      yield <PlaySelectionOption symbol_="SAC" label="Sacrifice bunt" outs={1} onResult={cb(false)} />;
-      yield <PlaySelectionOption symbol_="SF" label="Sacrifice fly" outs={1} onResult={cb(false)} />;
+      yield <PlaySelectionOption label="Strikeout swinging" onResult={cb('K', 1, false)} />;
+      yield <PlaySelectionOption label="Strikeout looking" onResult={cb(unescape("%uA4D8"), 1, false)} />;
+      yield <PlaySelectionOption label="Fielder's Choice" fielderInputs="many" onResult={
+        (fielders: string) => {
+          this.props.onSelectOutcome({ shorthand: "FC " + fielders, outs: 1, reached: true });
+        }} />;
+      yield <PlaySelectionOption label="Sacrifice bunt" onResult={cb('SAC', 1, false)} />;
+      yield <PlaySelectionOption label="Sacrifice fly" onResult={cb('SF', 1, false)} />;
+      yield <PlaySelectionOption label="Groundout" fielderInputs="many" onResult={fielders =>
+        this.props.onSelectOutcome({ shorthand: fielders.length == 1 ? fielders + 'U' : fielders, outs: 1, reached: false })
+      } />;
+
+      yield <PlaySelectionOption label="Flyout" fielderInputs="one" onResult={fielder =>
+        this.props.onSelectOutcome({ shorthand: fielder, outs: 1, reached: false })
+      } />
+
+      yield <PlaySelectionOption label="Lineout" fielderInputs="one" onResult={fielder =>
+        this.props.onSelectOutcome({ shorthand: 'L' + fielder, outs: 1, reached: false })
+      } />
+
+      yield <PlaySelectionOption label="Grounded into double play" fielderInputs="many" onResult={fielders =>
+        this.props.onSelectOutcome({ shorthand: fielders + ' DP', outs: 2, reached: false })
+      } />
     }
     else {
-      yield <PlaySelectionOption symbol_="CS" label="Caught Stealing" outs={1} onResult={cb(false)} />;
-      yield <PlaySelectionOption symbol_="PO" label="Pick off" outs={1} onResult={cb(false)} />;
+      yield <PlaySelectionOption label="Caught Stealing" onResult={cb('CS', 1, false)} />;
+      yield <PlaySelectionOption label="Pick off" onResult={cb('PO', 1, false)} />;
     }
   }
 
   // computes and returns a list of actions for this basepath that do not result
   // in an out
   private* generateNoOutsOptions() {
-    const cb: OptionResultHandler = (symbol_: string, outs: number) =>
-      this.props.onSelectOutcome({ shorthand: symbol_, outs: outs, reached: true });
+    const cb = (symbol_: string) =>
+      () =>
+        this.props.onSelectOutcome({ shorthand: symbol_, outs: 0, reached: true });
 
     if (this.props.base === 0) {
-      yield <PlaySelectionOption symbol_="1B" label="Single" outs={0} onResult={cb} />;
-      yield <PlaySelectionOption symbol_="2B" label="Double" outs={0} onResult={cb} />;
-      yield <PlaySelectionOption symbol_="3B" label="Triple" outs={0} onResult={cb} />;
-      yield <PlaySelectionOption symbol_="HR" label="Home Run" outs={0} onResult={cb} />;
-      yield <PlaySelectionOption symbol_="HBP" label="Hit by Pitch" outs={0} onResult={cb} />;
+      yield <PlaySelectionOption label="Single" onResult={cb('1B')} />;
+      yield <PlaySelectionOption label="Double" onResult={cb('2B')} />;
+      yield <PlaySelectionOption label="Triple" onResult={cb('3B')} />;
+      yield <PlaySelectionOption label="Home Run" onResult={cb('HR')} />;
+      yield <PlaySelectionOption label="Hit by Pitch" onResult={cb('HBP')} />;
     }
     else {
-      yield <PlaySelectionOption symbol_="SB" label="Stolen Base" outs={0} onResult={cb} />;
+      yield <PlaySelectionOption label="Stolen Base" onResult={cb('SB')} />;
     }
 
-    yield <PlaySelectionOption symbol_="BB" label="Base on Balls" outs={0} onResult={cb} />;
-  }
-
-  private renderFielderSelection() {
-    if (this.state.onFielderSelected !== undefined) {
-      return (
-        <SelectFielder
-          allowMultiple={this.state.selectMultipleFielders || false}
-          onFielderSelected={this.state.onFielderSelected} />
-      );
-    }
+    yield <PlaySelectionOption label="Base on Balls" onResult={cb('BB')} />;
   }
 
   render() {
-    // If there's a callback for picking fielders, that means the user already
-    // picked a play type.
-    if (this.state.onFielderSelected) {
-      return this.renderFielderSelection();
-    }
-
     const noOuts = Array.from(this.generateNoOutsOptions());
     const outs = Array.from(this.generateOutsOptions());
-
-    //const onSelectFielderResult = (symbol_: string, outs: number, onSelectFielder: ())
 
     return (
       <div style={{textAlign: 'left'}}>
@@ -127,36 +162,6 @@ export default class OutcomeSelector extends Component<OutcomeSelectorProps, Out
           <ul>
             {outs}
 
-            <PlaySelectionOption symbol_="" label="Groundout" outs={1} onResult={(symbol_, outs) =>
-              this.setState({
-                selectMultipleFielders: true,
-                onFielderSelected: fielders =>
-                  this.props.onSelectOutcome({
-                    shorthand: fielders.length == 1 ? fielders + 'U' : fielders,
-                    outs: outs,
-                    reached: false
-                  })
-              }) } />
-
-            <PlaySelectionOption symbol_="" label="Flyout" outs={1} onResult={(symbol_, outs) =>
-              this.setState({
-                selectMultipleFielders: false,
-                onFielderSelected: fielder => {
-                  const result = fielder;
-                  this.props.onSelectOutcome({ shorthand: result, outs: outs, reached: false });
-                }
-              })
-            } />
-
-            <PlaySelectionOption symbol_="L" label="Lineout" outs={1} onResult={(symbol_, outs) =>
-              this.setState({
-                selectMultipleFielders: false,
-                onFielderSelected: fielder => {
-                  const result = fielder;
-                  this.props.onSelectOutcome({ shorthand: result, outs: outs, reached: false });
-                }
-              })
-            } />
           </ul>
         </fieldset>
       </div>

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, CSSProperties } from 'react';
 
 interface FielderDiagramProps {
   onFielderSelected: (result: string) => void;
@@ -33,7 +33,7 @@ export default class SelectFielder extends Component<FielderDiagramProps, Fielde
   }
 
   render() {
-    const divStyle = { minHeight: 200, width: 200, margin: '0 auto' };
+    const divStyle: CSSProperties = { minHeight: 200, width: 200, margin: '0 auto', textAlign: 'center' };
 
     return (
       <div style={divStyle}>
@@ -59,7 +59,7 @@ export default class SelectFielder extends Component<FielderDiagramProps, Fielde
           <text x={48} y={15} onClick={() => this.handleClick(8)}>8</text>
           <text x={83} y={35} onClick={() => this.handleClick(9)}>9</text>
         </svg>
-        <p>{this.state.result}</p>
+        <p>{this.state.result}&nbsp;</p>
         <button onClick={() => this.props.onFielderSelected(this.state.result)}>Done</button>
       </div>
     );

@@ -41,8 +41,8 @@ export default function BasePath(props: BasePathProps) {
   return (
     <React.Fragment>
       <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="black" />
-      <text x={labelPosition.x} y={labelPosition.y} text-anchor={labelPosition.anchor}>{props.result}</text>
-      <rect fill-opacity="0" x={xmin} y={ymin} width={width} height={height} onClick={props.handleClick} />
+      <text x={labelPosition.x} y={labelPosition.y} textAnchor={labelPosition.anchor}>{props.result}</text>
+      <rect fillOpacity="0" x={xmin} y={ymin} width={width} height={height} onClick={props.handleClick} />
     </React.Fragment>
   );
 }

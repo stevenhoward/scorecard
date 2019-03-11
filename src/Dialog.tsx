@@ -35,7 +35,7 @@ export default function Dialog(props: DialogProps) {
         <div>
           {props.children}
         </div>
-        <footer style={{  }}>
+        <footer style={{ textAlign: 'center' }}>
           <button onClick={props.onClose}>Cancel</button>
         </footer>
       </div>
