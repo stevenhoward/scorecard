@@ -148,7 +148,6 @@ class App extends Component {
     return (
       <div className="App">
         <PlateAppearance />
-        <SelectFielder onSubmit={() => {}}/>
       </div>
     );
   }

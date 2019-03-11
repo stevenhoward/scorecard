@@ -12,3 +12,6 @@ Click 1st-base line
 * Hit/walk/error/HBP: fill line to first
 * Out: select defenders from a diagram, or use keyboard
 
+
+Need to rethink design for passing data from the 'type of thing' dialog to the
+fielder selection dialog.

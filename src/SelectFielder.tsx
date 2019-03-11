@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
 
 interface FielderDiagramProps {
-  onSubmit: (result: string) => void;
+  onFielderSelected: (result: string) => void;
 
-  // Only pick one fielder (no submit button)
-  singleOnly?: boolean;
+  allowMultiple: boolean;
 }
 
 interface FielderDiagramState {
@@ -18,9 +17,9 @@ export default class SelectFielder extends Component<FielderDiagramProps, Fielde
   }
 
   handleClick(position: number) {
-    if (this.props.singleOnly) {
+    if (!this.props.allowMultiple) {
       this.setState({ result: '' + position });
-      this.props.onSubmit('' + position);
+      this.props.onFielderSelected('' + position);
       return;
     }
 
@@ -34,7 +33,7 @@ export default class SelectFielder extends Component<FielderDiagramProps, Fielde
   }
 
   render() {
-    const divStyle = { height: 200, width: 200 };
+    const divStyle = { minHeight: 200, width: 200, margin: '0 auto' };
 
     return (
       <div style={divStyle}>
@@ -61,7 +60,7 @@ export default class SelectFielder extends Component<FielderDiagramProps, Fielde
           <text x={83} y={35} onClick={() => this.handleClick(9)}>9</text>
         </svg>
         <p>{this.state.result}</p>
-        <button onClick={() => this.props.onSubmit(this.state.result)}>Done</button>
+        <button onClick={() => this.props.onFielderSelected(this.state.result)}>Done</button>
       </div>
     );
   }

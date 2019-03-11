@@ -30,6 +30,11 @@
   font-size-adjust: 0.4;
 }
 
+.out-description, .out-indicator-text {
+  font-size-adjust: 0.5;
+  text-anchor: middle;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
