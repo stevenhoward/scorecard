@@ -10,7 +10,10 @@ interface PlateAppearanceState {
   basepaths: BasePathProps[];
   dialogVisible: boolean;
   dialogContents?: ReactNode;
-  outDescription?: string;
+
+  outNumber?: number;
+
+  outDescription?: string[];
 }
 
 export default class PlateAppearance extends Component<PlateAppearanceProps, PlateAppearanceState> {
@@ -31,24 +34,58 @@ export default class PlateAppearance extends Component<PlateAppearanceProps, Pla
     this.setState({ dialogVisible: false, dialogContents: null });
   }
 
+  private resetUnreachedBases(basepaths: BasePathProps[]) {
+    let reset = false;
+    for (let i = 0; i < basepaths.length; ++i) {
+      if (reset) {
+        basepaths[i].reached = undefined;
+        basepaths[i].result = undefined;
+      }
+      else if(basepaths[i].reached !== true) {
+        reset = true;
+      }
+    }
+
+    return basepaths;
+  }
+
   clickPath(base: number) {
+    // Ensure that clicking the path to, say, second base doesn't work if we
+    // haven't reached first
+    for (let i = 0; i < base; ++i) {
+      if (this.state.basepaths[i].reached !== true) {
+        return false;
+      }
+    }
+
     const self = this;
     function onSelectOutcome(outcome: SelectedOutcome) {
       const basepaths = self.state.basepaths.slice();
 
-      if (outcome.outs === 0) {
-        self.setState({ outDescription: undefined });
-        basepaths[base].result = outcome.shorthand;
+      if (!outcome.reached && base == 0) {
+        // If the batter doesn't reach base at all, we write the way the out was
+        // made in the middle.
+        self.setState({
+          outDescription: outcome.shorthand.split('\n'),
+          outNumber: outcome.outs
+        });
+
+        basepaths[0].result = undefined;
+        basepaths[0].reached = undefined;
       }
       else {
-        for (const path of basepaths) {
-          path.result = '';
+        if (!outcome.reached) {
+          self.setState({ outNumber: outcome.outs });
+        }
+        else {
+          self.setState({ outDescription: undefined, outNumber: undefined });
         }
 
-        self.setState({ outDescription: outcome.shorthand });
+        basepaths[base].result = outcome.shorthand;
+        basepaths[base].reached = outcome.reached;
       }
 
-      self.setState({ basepaths: basepaths });
+      self.setState({ basepaths: self.resetUnreachedBases(basepaths) });
       self.closeDialog();
     }
 
@@ -60,11 +97,19 @@ export default class PlateAppearance extends Component<PlateAppearanceProps, Pla
     const basePaths = this.state.basepaths.map(props => <BasePath {...props} />);
     let outDescription: ReactNode = null;
     let outIndicator: ReactNode = null;
+
     if (this.state.outDescription) {
-      outDescription = <text className="out-description" x={50} y={50}>{this.state.outDescription}</text>;
+      outDescription = (
+        <text className="out-description" x={50} y={50-15}>
+          { this.state.outDescription.map(desc => <tspan x={50} dy={15}>{desc}</tspan>) }
+        </text>
+      );
+    }
+
+    if (this.state.outNumber) {
       outIndicator = (
         <React.Fragment>
-          <text className="out-indicator-text" x={5} y={95}>1</text>
+          <text className="out-indicator-text" x={5} y={95}>{this.state.outNumber}</text>
           <circle cx={5} cy={90} r="8" stroke="black" fill="none" />
         </React.Fragment>
       );

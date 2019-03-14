@@ -1,3 +1,26 @@
+.base-line-unfilled {
+  stroke: #888;
+}
+
+.base-line-did-not-reach {
+  stroke: #f00;
+  stroke-width: 2px;
+}
+
+.base-line-did-reach {
+  stroke: #000;
+  stroke-width: 2px;
+}
+
+a {
+  color: black;
+  text-decoration: none;
+}
+
+a:hover {
+  font-weight: bold;
+}
+
 .App {
   text-align: center;
 }
@@ -24,6 +47,14 @@
 
 .fielder-selector {
   font-size-adjust: 0.3;
+}
+
+.fielder-selector text {
+  cursor: pointer;
+}
+
+.fielder-selector text:hover {
+  font-weight: bold;
 }
 
 .base-path-diagram {

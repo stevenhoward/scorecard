@@ -64,26 +64,7 @@ interface OutcomeSelectorProps {
   onSelectOutcome: (selectedOutcome: SelectedOutcome) => void;
 }
 
-enum OutcomeSelectorMode {
-  Initial,
-  FielderSelection,
-}
-
-interface OutcomeSelectorState {
-  selectMultipleFielders: boolean | null;
-  onFielderSelected?: (fielders: string) => void;
-  mode: OutcomeSelectorMode;
-}
-
-export default class OutcomeSelector extends Component<OutcomeSelectorProps, OutcomeSelectorState> {
-  constructor(props: OutcomeSelectorProps) {
-    super(props);
-    this.state = {
-      selectMultipleFielders: null,
-      mode: OutcomeSelectorMode.Initial
-    };
-  }
-
+export default class OutcomeSelector extends Component<OutcomeSelectorProps, {}> {
   // computes and returns a list of actions from this basepath that do result in
   // an out and don't require a player input
   private *generateOutsOptions() {
@@ -91,29 +72,34 @@ export default class OutcomeSelector extends Component<OutcomeSelectorProps, Out
       () =>
         this.props.onSelectOutcome({ shorthand: symbol_, outs: outs, reached: reached });
 
+    const oso = this.props.onSelectOutcome;
+
     if (this.props.base === 0) {
       yield <PlaySelectionOption label="Strikeout swinging" onResult={cb('K', 1, false)} />;
       yield <PlaySelectionOption label="Strikeout looking" onResult={cb(unescape("%uA4D8"), 1, false)} />;
-      yield <PlaySelectionOption label="Fielder's Choice" fielderInputs="many" onResult={
-        (fielders: string) => {
-          this.props.onSelectOutcome({ shorthand: "FC " + fielders, outs: 1, reached: true });
-        }} />;
-      yield <PlaySelectionOption label="Sacrifice bunt" onResult={cb('SAC', 1, false)} />;
-      yield <PlaySelectionOption label="Sacrifice fly" onResult={cb('SF', 1, false)} />;
+      yield <PlaySelectionOption label="Fielder's Choice" fielderInputs="many" onResult={fielders =>
+        oso({ shorthand: "FC\n" + fielders, outs: 1, reached: true })
+      } />;
+      yield <PlaySelectionOption label="Sacrifice bunt" fielderInputs="many" onResult={fielder =>
+        oso({ shorthand: "SAC\n" + fielder, outs: 1, reached: false })
+      } />;
+      yield <PlaySelectionOption label="Sacrifice fly" fielderInputs="one" onResult={fielder =>
+        oso({ shorthand: "SF\n" + fielder, outs: 1, reached: false })
+      } />;
       yield <PlaySelectionOption label="Groundout" fielderInputs="many" onResult={fielders =>
-        this.props.onSelectOutcome({ shorthand: fielders.length == 1 ? fielders + 'U' : fielders, outs: 1, reached: false })
+        oso({ shorthand: fielders.length == 1 ? fielders + 'U' : fielders, outs: 1, reached: false })
       } />;
 
       yield <PlaySelectionOption label="Flyout" fielderInputs="one" onResult={fielder =>
-        this.props.onSelectOutcome({ shorthand: fielder, outs: 1, reached: false })
+        oso({ shorthand: fielder, outs: 1, reached: false })
       } />
 
       yield <PlaySelectionOption label="Lineout" fielderInputs="one" onResult={fielder =>
-        this.props.onSelectOutcome({ shorthand: 'L' + fielder, outs: 1, reached: false })
+        oso({ shorthand: 'L' + fielder, outs: 1, reached: false })
       } />
 
       yield <PlaySelectionOption label="Grounded into double play" fielderInputs="many" onResult={fielders =>
-        this.props.onSelectOutcome({ shorthand: fielders + ' DP', outs: 2, reached: false })
+        oso({ shorthand: fielders + ' DP', outs: 2, reached: false })
       } />
     }
     else {
