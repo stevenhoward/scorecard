@@ -4,7 +4,8 @@ import Dialog from './Dialog';
 import BasePath, {BasePathProps} from './BasePath';
 import OutcomeSelector, {SelectedOutcome} from './OutcomeSelector';
 
-interface PlateAppearanceProps {}
+interface PlateAppearanceProps {
+}
 
 interface PlateAppearanceState {
   basepaths: BasePathProps[];
@@ -83,6 +84,17 @@ export default class PlateAppearance extends Component<PlateAppearanceProps, Pla
 
         basepaths[base].result = outcome.shorthand;
         basepaths[base].reached = outcome.reached;
+
+        if (outcome.bases !== undefined) {
+          let i = base + 1;
+          for (; i < base + outcome.bases; ++i) {
+            basepaths[i].reached = true;
+
+            // when the runner advances more than one base from the same play,
+            // e.g. an extra-base hit, we only label the first basepath
+            basepaths[i].result = '';
+          }
+        }
       }
 
       self.setState({ basepaths: self.resetUnreachedBases(basepaths) });
@@ -93,21 +105,23 @@ export default class PlateAppearance extends Component<PlateAppearanceProps, Pla
     this.setState({ dialogVisible: true, dialogContents: dialogContents });
   }
 
-  render() {
-    const basePaths = this.state.basepaths.map(props => <BasePath {...props} />);
-    let outDescription: ReactNode = null;
-    let outIndicator: ReactNode = null;
-
+  private renderOutDescription() {
     if (this.state.outDescription) {
-      outDescription = (
-        <text className="out-description" x={50} y={50-15}>
+      // Vertically center the multiline text
+      const offset = this.state.outDescription.length * 15 / 2;
+      return (
+        <text className="out-description" x={50} y={50-offset}>
           { this.state.outDescription.map(desc => <tspan x={50} dy={15}>{desc}</tspan>) }
         </text>
       );
     }
 
+    return null;
+  }
+
+  private renderOutIndicator() {
     if (this.state.outNumber) {
-      outIndicator = (
+      return (
         <React.Fragment>
           <text className="out-indicator-text" x={5} y={95}>{this.state.outNumber}</text>
           <circle cx={5} cy={90} r="8" stroke="black" fill="none" />
@@ -115,13 +129,19 @@ export default class PlateAppearance extends Component<PlateAppearanceProps, Pla
       );
     }
 
+    return null;
+  }
+
+  render() {
+    const basePaths = this.state.basepaths.map(props => <BasePath {...props} />);
+
     return (
       <React.Fragment>
         <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="110" height="100"
           className="base-path-diagram">
           {basePaths}
-          {outDescription}
-          {outIndicator}
+          {this.renderOutDescription()}
+          {this.renderOutIndicator()}
         </svg>
         <Dialog visible={this.state.dialogVisible} onClose={() => this.closeDialog()}>
           {this.state.dialogContents}

@@ -8,6 +8,10 @@ export interface SelectedOutcome {
   shorthand: string;
   outs: number;
   reached: boolean;
+
+  // How many bases did the runner advance?
+  // if reached is false, this is implied to be 0
+  bases?: number;
 }
 
 interface PlaySelectionOptionProps {
@@ -68,17 +72,18 @@ export default class OutcomeSelector extends Component<OutcomeSelectorProps, {}>
   // computes and returns a list of actions from this basepath that do result in
   // an out and don't require a player input
   private *generateOutsOptions() {
-    const cb = (symbol_: string, outs: number, reached: boolean) =>
-      () =>
-        this.props.onSelectOutcome({ shorthand: symbol_, outs: outs, reached: reached });
-
     const oso = this.props.onSelectOutcome;
+
+    const cb = (symbol_: string, outs: number, reached: boolean, bases: number = 0) =>
+      () =>
+        oso({ shorthand: symbol_, outs: outs, reached: reached, bases: bases });
+
 
     if (this.props.base === 0) {
       yield <PlaySelectionOption label="Strikeout swinging" onResult={cb('K', 1, false)} />;
       yield <PlaySelectionOption label="Strikeout looking" onResult={cb(unescape("%uA4D8"), 1, false)} />;
       yield <PlaySelectionOption label="Fielder's Choice" fielderInputs="many" onResult={fielders =>
-        oso({ shorthand: "FC\n" + fielders, outs: 1, reached: true })
+        oso({ shorthand: "FC\n" + fielders, outs: 1, reached: true, bases: 1 })
       } />;
       yield <PlaySelectionOption label="Sacrifice bunt" fielderInputs="many" onResult={fielder =>
         oso({ shorthand: "SAC\n" + fielder, outs: 1, reached: false })
@@ -111,22 +116,22 @@ export default class OutcomeSelector extends Component<OutcomeSelectorProps, {}>
   // computes and returns a list of actions for this basepath that do not result
   // in an out
   private* generateNoOutsOptions() {
-    const cb = (symbol_: string) =>
+    const cb = (symbol_: string, bases: number) =>
       () =>
-        this.props.onSelectOutcome({ shorthand: symbol_, outs: 0, reached: true });
+        this.props.onSelectOutcome({ shorthand: symbol_, outs: 0, reached: true, bases: bases });
 
     if (this.props.base === 0) {
-      yield <PlaySelectionOption label="Single" onResult={cb('1B')} />;
-      yield <PlaySelectionOption label="Double" onResult={cb('2B')} />;
-      yield <PlaySelectionOption label="Triple" onResult={cb('3B')} />;
-      yield <PlaySelectionOption label="Home Run" onResult={cb('HR')} />;
-      yield <PlaySelectionOption label="Hit by Pitch" onResult={cb('HBP')} />;
+      yield <PlaySelectionOption label="Single" onResult={cb('1B', 1)} />;
+      yield <PlaySelectionOption label="Double" onResult={cb('2B', 2)} />;
+      yield <PlaySelectionOption label="Triple" onResult={cb('3B', 3)} />;
+      yield <PlaySelectionOption label="Home Run" onResult={cb('HR', 4)} />;
+      yield <PlaySelectionOption label="Hit by Pitch" onResult={cb('HBP', 1)} />;
     }
     else {
-      yield <PlaySelectionOption label="Stolen Base" onResult={cb('SB')} />;
+      yield <PlaySelectionOption label="Stolen Base" onResult={cb('SB', 1)} />;
     }
 
-    yield <PlaySelectionOption label="Base on Balls" onResult={cb('BB')} />;
+    yield <PlaySelectionOption label="Base on Balls" onResult={cb('BB', 1)} />;
   }
 
   render() {
