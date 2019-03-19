@@ -4,8 +4,13 @@ import Dialog from './Dialog';
 import BasePath, {BasePathProps} from './BasePath';
 import OutcomeSelector, {SelectedOutcome} from './OutcomeSelector';
 import Diagram from './Diagram';
+import {PlayFragment} from './Play';
 
 interface PlateAppearanceProps {
+  outsBefore: number;
+  onPlayFragment: (fragment: PlayFragment) => void;
+  onClearFragment: (base: number) => void;
+  fragments: PlayFragment[];
 }
 
 interface PlateAppearanceState {
@@ -30,39 +35,69 @@ export default class PlateAppearance extends Component<PlateAppearanceProps, Pla
     };
   }
 
+  static getDerivedStateFromProps(props: PlateAppearanceProps, state: PlateAppearanceState) {
+    const fragments = props.fragments;
+
+    let outDescription: (string | undefined);
+    let outNumber: (number | undefined);
+    const reached = [];
+    const results = [];
+
+    if (fragments.length == 1 && fragments[0].bases === 0) {
+      outDescription = fragments[0].label;
+      outNumber = props.outsBefore + 1;
+    }
+    else {
+      for (let i = 0; i < fragments.length; ++i) {
+        const f = fragments[i];
+
+        if (f.bases === 0) {
+          reached.push(false);
+          results.push(f.label);
+        }
+        else {
+          reached.push(true);
+          results.push(f.label);
+
+          for (let j = 1; j < f.bases; ++j) {
+            reached.push(true);
+            results.push('');
+          }
+        }
+      }
+    }
+
+    return {
+      reached: reached,
+      results: results,
+      outDescription: outDescription,
+      outNumber: outNumber,
+    };
+  }
+
   closeDialog() {
     this.setState({ dialogVisible: false, dialogContents: null });
   }
 
   private handleBaseClicked(base: number) {
-    const onSelectOutcome = (outcome: SelectedOutcome) => {
-      const reached = this.state.reached.slice();
-      const results = this.state.results.slice();
-
-      // Click '1B' on the first base line and it clears everything else
-      for (let i = base + 1; i < 4; ++i) {
-        reached[i] = undefined;
-        results[i] = undefined;
-      }
-
-      if (outcome.bases) {
-        for (let i = base + 1; i < base + outcome.bases; ++i) {
-          reached[i] = true;
-          results[i] = '';
-        }
-      }
-
-      reached[base] = outcome.reached;
-      results[base] = outcome.shorthand;
-
-      this.setState({ reached: reached, results: results })
-      this.closeDialog();
+    if (this.state.reached.length > base || base == 0 && this.state.outNumber) {
+      this.props.onClearFragment(base);
     }
+    else {
+      const onSelectOutcome = (outcome: SelectedOutcome) => {
+        this.props.onPlayFragment({
+          bases: outcome.bases || 0,
+          label: outcome.shorthand,
+        });
 
-    this.setState({
-      dialogVisible: true,
-      dialogContents: <OutcomeSelector base={base} onSelectOutcome={onSelectOutcome} />,
-    })
+        this.closeDialog();
+      }
+
+      this.setState({
+        dialogVisible: true,
+        dialogContents: <OutcomeSelector base={base} onSelectOutcome={onSelectOutcome} />,
+      });
+    }
   }
 
   render() {
@@ -79,9 +114,5 @@ export default class PlateAppearance extends Component<PlateAppearanceProps, Pla
         </Dialog>
       </React.Fragment>
     );
-
-    /*
-    return (
-    );*/
   }
 }

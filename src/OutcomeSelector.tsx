@@ -51,7 +51,6 @@ class PlaySelectionOption extends Component<PlaySelectionOptionProps, PlaySelect
       <React.Fragment>
         <li onClick={() => this.handleClick()}>
           <a href="javascript: void(0)">{this.props.label}</a>
-
         </li>
         <Dialog visible={this.state.showFielderSelector}
           onClose={() => this.setState({showFielderSelector: false})}>
@@ -68,7 +67,33 @@ interface OutcomeSelectorProps {
   onSelectOutcome: (selectedOutcome: SelectedOutcome) => void;
 }
 
-export default class OutcomeSelector extends Component<OutcomeSelectorProps, {}> {
+enum OutcomeSelectorMode {
+  Type,
+  Player,
+}
+
+interface OutcomeSelectorState {
+  mode: OutcomeSelectorMode;
+  onFielderSelected: (fielders: string) => void;
+  allowMultiple?: boolean;
+}
+
+export default class OutcomeSelector extends Component<OutcomeSelectorProps, OutcomeSelectorState> {
+  constructor(props: OutcomeSelectorProps) {
+    super(props);
+    this.state = {
+      mode: OutcomeSelectorMode.Type,
+      onFielderSelected: () => {}
+    };
+  }
+
+  private selectFielder(onResult: (fielders: string) => void) {
+    this.setState({
+      mode: OutcomeSelectorMode.Player,
+      onFielderSelected: onResult
+    });
+  }
+
   // computes and returns a list of actions from this basepath that do result in
   // an out and don't require a player input
   private *generateOutsOptions() {
@@ -138,24 +163,29 @@ export default class OutcomeSelector extends Component<OutcomeSelectorProps, {}>
     const noOuts = Array.from(this.generateNoOutsOptions());
     const outs = Array.from(this.generateOutsOptions());
 
-    return (
-      <div style={{textAlign: 'left'}}>
-        <fieldset>
-          <legend>No outs</legend>
-          <ul>
-            {noOuts}
+    if (this.state.mode == OutcomeSelectorMode.Type) {
+      return (
+        <div style={{textAlign: 'left'}}>
+          <fieldset>
+            <legend>No outs</legend>
+            <ul>
+              {noOuts}
 
-          </ul>
-        </fieldset>
+            </ul>
+          </fieldset>
 
-        <fieldset>
-          <legend>Outs</legend>
-          <ul>
-            {outs}
+          <fieldset>
+            <legend>Outs</legend>
+            <ul>
+              {outs}
 
-          </ul>
-        </fieldset>
-      </div>
-    );
+            </ul>
+          </fieldset>
+        </div>
+      );
+    }
+    else {
+      return <SelectFielder allowMultiple={this.state.allowMultiple || false} onFielderSelected={this.state.onFielderSelected} />
+    }
   }
 }

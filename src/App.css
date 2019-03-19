@@ -1,3 +1,17 @@
+.inning-container {
+  display: flex;
+  flex-flow: column;
+}
+
+.inning-container > * {
+  margin-bottom: 2px;
+}
+
+.static svg {
+  display: block;
+  padding-bottom: 5px;
+}
+
 .base-line-unfilled {
   stroke: #888;
 }
@@ -65,8 +79,6 @@ a:hover {
   font-size-adjust: 0.5;
   text-anchor: middle;
 }
-
-svg { display: block; }
 
 @keyframes App-logo-spin {
   from {

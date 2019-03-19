@@ -15,3 +15,18 @@ Click 1st-base line
 
 Need to rethink design for passing data from the 'type of thing' dialog to the
 fielder selection dialog.
+
+
+Diagram now handles rendering. PlateAppearance has a position in between Inning
+(which should own the data) and Diagram (which just renders what it's told to
+render).
+
+PlayFragment should be a structure that encapsulates what happens between a
+player coming up to bat and scoring or making an out. PlateAppearance then
+translates a list of PlayFragments into the Diagram properties, and Inning
+maintains a list of PlayFragments grouped together (to link different players
+within the same play).
+
+Play = { player: _, fragment: PlayFragment }[]
+PlateAppearance = { player: _,  plays: PlayFragment[] }
+

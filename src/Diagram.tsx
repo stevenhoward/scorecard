@@ -41,7 +41,7 @@ export default function Base(props: DiagramProps) {
 
   // Generates a function that calls props.onBaseClicked(base) if the previous
   // bases are filled in
-  const obc = (base: number) =>
+  const genOnBaseClicked = (base: number) =>
     () => {
       if (props.onBaseClicked !== undefined) {
         // check: are we on the previous base?
@@ -71,19 +71,19 @@ export default function Base(props: DiagramProps) {
       <BasePath
         x1={50} y1={100} x2={100} y2={50}
         reached={reachedFirst} result={props.results[0]}
-        handleClick={obc(0)} />
+        handleClick={genOnBaseClicked(0)} />
       <BasePath
         x1={100} y1={50} x2={50} y2={0}
         reached={reachedSecond} result={props.results[1]}
-        handleClick={obc(1)} />
+        handleClick={genOnBaseClicked(1)} />
       <BasePath
         x1={50} y1={0} x2={0} y2={50}
         reached={reachedThird} result={props.results[2]}
-        handleClick={obc(2)} />
+        handleClick={genOnBaseClicked(2)} />
       <BasePath
         x1={0} y1={50} x2={50} y2={100}
         reached={reachedHome} result={props.results[3]}
-        handleClick={obc(3)} />
+        handleClick={genOnBaseClicked(3)} />
 
       {outNumberFragment}
       {outDescriptionFragment}
