@@ -44,25 +44,19 @@ export default class PlateAppearance extends Component<PlateAppearanceProps, Pla
     const results = [];
 
     if (fragments.length == 1 && fragments[0].bases === 0) {
+      // simple out, did not reach base.
       outDescription = fragments[0].label;
       outNumber = props.outsBefore + 1;
     }
     else {
-      for (let i = 0; i < fragments.length; ++i) {
-        const f = fragments[i];
+      for (const f of fragments) {
+        reached.push(true);
+        results.push(f.label);
 
-        if (f.bases === 0) {
-          reached.push(false);
-          results.push(f.label);
-        }
-        else {
+        // Additional bases get a line but not a label
+        for (let i = 1; i < f.bases; ++i) {
           reached.push(true);
-          results.push(f.label);
-
-          for (let j = 1; j < f.bases; ++j) {
-            reached.push(true);
-            results.push('');
-          }
+          results.push('');
         }
       }
     }
