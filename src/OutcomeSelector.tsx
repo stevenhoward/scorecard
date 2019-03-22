@@ -151,12 +151,11 @@ export default class OutcomeSelector extends Component<OutcomeSelectorProps, Out
       yield <PlaySelectionOption label="Triple" onResult={cb('3B', 3)} />;
       yield <PlaySelectionOption label="Home Run" onResult={cb('HR', 4)} />;
       yield <PlaySelectionOption label="Hit by Pitch" onResult={cb('HBP', 1)} />;
+      yield <PlaySelectionOption label="Base on Balls" onResult={cb('BB', 1)} />;
     }
     else {
       yield <PlaySelectionOption label="Stolen Base" onResult={cb('SB', 1)} />;
     }
-
-    yield <PlaySelectionOption label="Base on Balls" onResult={cb('BB', 1)} />;
   }
 
   render() {

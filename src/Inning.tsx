@@ -4,8 +4,6 @@ import {PlayFragment} from './Play';
 
 interface InningProps {
   battingOrder: any[];
-
-  // e.g. 0 in the first inning
 }
 
 interface InningState {
@@ -23,9 +21,7 @@ function groupBy<T>(xs: T[], key: string): Array<Array<T>>  {
 export default class Inning extends Component<InningProps, InningState> {
   constructor(props: InningProps) {
     super(props);
-    this.state = {
-      indexedFragments: [],
-    };
+    this.state = { indexedFragments: [] };
   }
 
   private getTotalBases() : {index: number, bases: number}[] {
@@ -48,13 +44,17 @@ export default class Inning extends Component<InningProps, InningState> {
       sort((a, b) => a.base - b.base);
   }
 
-  private* getForcedRunners() {
+  private* getForcedRunners(numBases: number) : IterableIterator<{index: number, base: number}> {
     const runners = this.getBaseRunners();
-    let previousBase = 0;
+    let base = 1;
     for (const runner of runners) {
-      if (runner.base == previousBase + 1) {
+      while (base < runner.base) {
+        ++base;
+        --numBases;
+      }
+
+      if (numBases > 0) {
         yield runner;
-        ++previousBase;
       }
     }
   }
@@ -62,11 +62,12 @@ export default class Inning extends Component<InningProps, InningState> {
   // User clicked an empty segment and we need to add it
   private handlePlayFragment(index: number, fragment: PlayFragment) {
     const name = this.props.battingOrder[index % this.props.battingOrder.length];
-    const forcedRunners = Array.from(this.getForcedRunners()).map(runner => {
+    const label = fragment.label == 'BB' ? fragment.label : name;
+    const forcedRunners = Array.from(this.getForcedRunners(fragment.bases)).map(runner => {
       return {
         index: runner.index,
         fragment: {
-          label: name,
+          label: label,
           bases: fragment.bases,
         }
       };
@@ -87,12 +88,11 @@ export default class Inning extends Component<InningProps, InningState> {
     let baseIndex = 0;
 
     for (const i of this.state.indexedFragments) {
-      if (i.index != index) {
-        result.push(i);
+      if (i.index == index && (baseIndex += i.fragment.bases) >= base) {
+        break;
       }
-      else if ((baseIndex += i.fragment.bases) < base) {
-        result.push(i);
-      }
+
+      result.push(i);
     }
 
     this.setState({
@@ -102,7 +102,6 @@ export default class Inning extends Component<InningProps, InningState> {
 
   render() {
     const fragments = this.state.indexedFragments;
-    const plateAppearances: PlateAppearance[] = [];
 
     const getOutsBefore = (index: number) =>
       fragments.filter(f => f.fragment.bases === 0 && f.index < index).length;
@@ -113,9 +112,10 @@ export default class Inning extends Component<InningProps, InningState> {
         this.props.battingOrder.map((name, i) =>
           <PlateAppearance
             outsBefore={getOutsBefore(i)}
-          onPlayFragment={f => this.handlePlayFragment(i, f)}
-          onClearFragment={b => this.handleClearFragment(i, b)}
-          fragments={fragments.filter(f => f.index == i).map(f => f.fragment)}
+            onPlayFragment={f => this.handlePlayFragment(i, f)}
+            onClearFragment={b => this.handleClearFragment(i, b)}
+            fragments={fragments.filter(f => f.index == i).map(f => f.fragment)}
+            key={i}
           />)
         }
       </div>

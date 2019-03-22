@@ -30,3 +30,9 @@ within the same play).
 Play = { player: _, fragment: PlayFragment }[]
 PlateAppearance = { player: _,  plays: PlayFragment[] }
 
+
+Need to figure out how to advance runners. Force plays are obvious, but we can't
+know if a runner on second will score on a single, e.g. Need to provide some
+form of input.
+
+Need to cue the user on inputs that currently require attention. Green baseline?
