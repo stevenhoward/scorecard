@@ -26,7 +26,7 @@ function getLabelPosition(props: Rect) {
 
 export interface BasePathProps extends Rect {
   result?: string;
-  reached?: boolean;
+  status: 'initial' | 'safe' | 'out' | 'interactive';
   handleClick: ()=>void;
 }
 
@@ -38,13 +38,10 @@ export default function BasePath(props: BasePathProps) {
   const ymin = Math.min(y1, y2);
 
   const labelPosition = getLabelPosition(props);
+  const baseLineClass = `base-line ${props.status}`;
 
   let baseLine: ReactNode;
-  if (props.reached === true) {
-    // When the player reaches a base, shade that line darker
-    baseLine = <line x1={x1} y1={y1} x2={x2} y2={y2} className="base-line-did-reach" />;
-  }
-  else if(props.reached === false) {
+  if(props.status == 'out') {
     // When the player doesn't reach a base (except first), draw half the line
     // and a perpendicular stub at the end
     const ax = (x1 + x2) / 2, ay = (y1 + y2) / 2;
@@ -53,17 +50,21 @@ export default function BasePath(props: BasePathProps) {
 
     baseLine = (
       <React.Fragment>
-        <line x1={x1} y1={y1} x2={ax} y2={ay} className="base-line-did-not-reach" />
+        <line x1={x1} y1={y1} x2={ax} y2={ay} className={baseLineClass} />
         <line x1={ax + orthx * scale} y1={ay - orthy * scale}
               x2={ax - orthx * scale} y2={ay + orthy * scale}
-              className="base-line-did-not-reach" />
+              className={baseLineClass} />
       </React.Fragment>
     );
+  }
+  else {
+    // When the player reaches a base, shade that line darker
+    baseLine = <line x1={x1} y1={y1} x2={x2} y2={y2} className={baseLineClass} />;
   }
 
   return (
     <React.Fragment>
-      <line x1={x1} y1={y1} x2={x2} y2={y2} className="base-line-unfilled" />
+      <line x1={x1} y1={y1} x2={x2} y2={y2} className={baseLineClass} />
       {baseLine}
       <text x={labelPosition.x} y={labelPosition.y} textAnchor={labelPosition.anchor}>{props.result}</text>
       <rect fillOpacity="0" x={xmin} y={ymin} width={width} height={height} onClick={props.handleClick} />

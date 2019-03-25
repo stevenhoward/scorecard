@@ -12,16 +12,20 @@
   padding-bottom: 5px;
 }
 
-.base-line-unfilled {
+.base-line.initial {
   stroke: #888;
 }
 
-.base-line-did-not-reach {
+.base-line.interactive {
+  stroke: #0c0;
+}
+
+.base-line.out {
   stroke: #f00;
   stroke-width: 2px;
 }
 
-.base-line-did-reach {
+.base-line.safe {
   stroke: #000;
   stroke-width: 2px;
 }

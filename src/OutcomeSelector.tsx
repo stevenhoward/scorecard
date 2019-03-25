@@ -49,7 +49,7 @@ class PlaySelectionOption extends Component<PlaySelectionOptionProps, PlaySelect
   render() {
     return (
       <React.Fragment>
-        <li onClick={() => this.handleClick()}>
+        <li onClick={() => this.handleClick()} key={this.props.label}>
           <a href="javascript: void(0)">{this.props.label}</a>
         </li>
         <Dialog visible={this.state.showFielderSelector}

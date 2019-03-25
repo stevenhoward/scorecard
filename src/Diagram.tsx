@@ -10,13 +10,38 @@ interface DiagramProps {
   // multiple lines. Otherwise, out descriptions go on the base line.
   outDescription?: string | string[];
 
+  // label for each base line
   results: (string | undefined)[];
+
+  // did the runner reach each base?
   reached: (boolean | undefined)[];
 
   onBaseClicked?: (base: number) => void;
 }
 
-export default function Base(props: DiagramProps) {
+function* statusFromReached(reached: (boolean | undefined)[]) {
+  let reachedPrevious = true;
+  for (let i = 0; i < 4; ++i) {
+    const r = reached[i];
+    if (r === true) {
+      yield 'safe';
+    }
+    else if (r === false) {
+      yield 'out';
+      reachedPrevious = false;
+    }
+    else if (reachedPrevious) {
+      yield 'interactive';
+      reachedPrevious = false;
+    }
+    else {
+      yield 'initial';
+      reachedPrevious = false;
+    }
+  }
+}
+
+export default function Diagram(props: DiagramProps) {
   let outNumberFragment: ReactNode = null;
   if (props.outNumber) {
     outNumberFragment = (
@@ -64,25 +89,31 @@ export default function Base(props: DiagramProps) {
   const reachedSecond = reachedThird || props.reached[1];
   const reachedFirst = reachedSecond || props.reached[0];
 
+  const status = Array.from(statusFromReached(props.reached));
+
   return (
     <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="110" height="100"
       className="base-path-diagram">
 
       <BasePath
         x1={50} y1={100} x2={100} y2={50}
-        reached={reachedFirst} result={props.results[0]}
+        status={status[0]}
+        result={props.results[0]}
         handleClick={genOnBaseClicked(0)} />
       <BasePath
         x1={100} y1={50} x2={50} y2={0}
-        reached={reachedSecond} result={props.results[1]}
+        status={status[1]}
+        result={props.results[1]}
         handleClick={genOnBaseClicked(1)} />
       <BasePath
         x1={50} y1={0} x2={0} y2={50}
-        reached={reachedThird} result={props.results[2]}
+        status={status[2]}
+        result={props.results[2]}
         handleClick={genOnBaseClicked(2)} />
       <BasePath
         x1={0} y1={50} x2={50} y2={100}
-        reached={reachedHome} result={props.results[3]}
+        status={status[3]}
+        result={props.results[3]}
         handleClick={genOnBaseClicked(3)} />
 
       {outNumberFragment}
