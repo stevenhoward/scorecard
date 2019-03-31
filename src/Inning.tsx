@@ -44,7 +44,7 @@ export default class Inning extends Component<InningProps, InningState> {
       sort((a, b) => a.base - b.base);
   }
 
-  private* getForcedRunners(numBases: number) : IterableIterator<{index: number, base: number}> {
+  private* getForcedRunners(index: number, numBases: number) : IterableIterator<{index: number, base: number}> {
     const runners = this.getBaseRunners();
     let base = 1;
     for (const runner of runners) {
@@ -53,7 +53,7 @@ export default class Inning extends Component<InningProps, InningState> {
         --numBases;
       }
 
-      if (numBases > 0) {
+      if (numBases > 0 && runner.index > index) {
         yield runner;
       }
     }
@@ -61,21 +61,24 @@ export default class Inning extends Component<InningProps, InningState> {
 
   // User clicked an empty segment and we need to add it
   private handlePlayFragment(index: number, fragment: PlayFragment) {
-    const name = this.props.battingOrder[index % this.props.battingOrder.length];
-    const label = fragment.label == 'BB' ? fragment.label : name;
-    const forcedRunners = Array.from(this.getForcedRunners(fragment.bases)).map(runner => {
-      return {
-        index: runner.index,
-        fragment: {
-          label: label,
-          bases: fragment.bases,
-        }
-      };
-    });
+    let fragments = this.state.indexedFragments.
+      concat({ index: index, fragment: fragment});
 
-    const fragments = this.state.indexedFragments.
-      concat({ index: index, fragment: fragment}).
-      concat(forcedRunners);
+    if (fragment.bases > 0) {
+      const name = this.props.battingOrder[index % this.props.battingOrder.length];
+      const label = fragment.label == 'BB' ? fragment.label : name;
+      const forcedRunners = Array.from(this.getForcedRunners(index, fragment.bases)).map(runner => {
+        return {
+          index: runner.index,
+          fragment: {
+            label: label,
+            bases: fragment.bases,
+          }
+        };
+      });
+
+      fragments = fragments.concat(forcedRunners);
+    }
 
     this.setState({
       indexedFragments: fragments
@@ -106,6 +109,14 @@ export default class Inning extends Component<InningProps, InningState> {
     const getOutsBefore = (index: number) =>
       fragments.filter(f => f.fragment.bases === 0 && f.index < index).length;
 
+    const maxIndex = fragments.length ? Math.max.apply(null, fragments.map(f => f.index)) : 0;
+    const outs = fragments.filter(f => f.fragment.bases == 0).length;
+    let lastOut: number|null = null;
+    if (outs == 3) {
+
+    }
+    console.log(maxIndex);
+
     return (
       <div className="inning-container">
         {
@@ -116,6 +127,7 @@ export default class Inning extends Component<InningProps, InningState> {
             onClearFragment={b => this.handleClearFragment(i, b)}
             fragments={fragments.filter(f => f.index == i).map(f => f.fragment)}
             key={i}
+            enabled={i <= maxIndex}
           />)
         }
       </div>

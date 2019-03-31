@@ -48,8 +48,8 @@ class PlaySelectionOption extends Component<PlaySelectionOptionProps, PlaySelect
 
   render() {
     return (
-      <React.Fragment>
-        <li onClick={() => this.handleClick()} key={this.props.label}>
+      <React.Fragment key={this.props.label}>
+        <li onClick={() => this.handleClick()}>
           <a href="javascript: void(0)">{this.props.label}</a>
         </li>
         <Dialog visible={this.state.showFielderSelector}
@@ -155,6 +155,8 @@ export default class OutcomeSelector extends Component<OutcomeSelectorProps, Out
     }
     else {
       yield <PlaySelectionOption label="Stolen Base" onResult={cb('SB', 1)} />;
+      yield <PlaySelectionOption label="Wild Pitch" onResult={cb('WP', 1)} />;
+      yield <PlaySelectionOption label="Passed Ball" onResult={cb('PB', 1)} />;
     }
   }
 

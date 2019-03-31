@@ -7,6 +7,7 @@ import Diagram from './Diagram';
 import {PlayFragment} from './Play';
 
 interface PlateAppearanceProps {
+  enabled: boolean;
   outsBefore: number;
   onPlayFragment: (fragment: PlayFragment) => void;
   onClearFragment: (base: number) => void;
@@ -36,6 +37,10 @@ export default class PlateAppearance extends Component<PlateAppearanceProps, Pla
   }
 
   static getDerivedStateFromProps(props: PlateAppearanceProps, state: PlateAppearanceState) {
+    // props gives us play-by-play data in the format most useful for the game
+    // as a whole, i.e. in chronologically-ordered chunks.
+    // state needs that data only in terms of which bases a player reached and
+    // how.
     const fragments = props.fragments;
 
     let outDescription: (string | undefined);
@@ -50,7 +55,7 @@ export default class PlateAppearance extends Component<PlateAppearanceProps, Pla
     }
     else {
       for (const f of fragments) {
-        reached.push(true);
+        reached.push(f.bases > 0);
         results.push(f.label);
 
         // Additional bases get a line but not a label
@@ -102,7 +107,10 @@ export default class PlateAppearance extends Component<PlateAppearanceProps, Pla
           outDescription={this.state.outDescription}
           reached={this.state.reached}
           results={this.state.results}
-          onBaseClicked={this.handleBaseClicked.bind(this)} />
+          onBaseClicked={this.handleBaseClicked.bind(this)}
+          enabled={this.props.enabled}
+        />
+
         <Dialog visible={this.state.dialogVisible} onClose={this.closeDialog.bind(this)}>
           {this.state.dialogContents}
         </Dialog>

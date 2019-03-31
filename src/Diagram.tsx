@@ -2,6 +2,9 @@ import React, { Component, CSSProperties, ReactNode } from 'react';
 import BasePath, {BasePathProps} from './BasePath';
 
 interface DiagramProps {
+  // Is interaction enabled?
+  enabled: boolean;
+
   // If there was an out, we indicate whether this is the first, second, or
   // third of the inning
   outNumber?: number;
@@ -16,7 +19,7 @@ interface DiagramProps {
   // did the runner reach each base?
   reached: (boolean | undefined)[];
 
-  onBaseClicked?: (base: number) => void;
+  onBaseClicked: (base: number) => void;
 }
 
 function* statusFromReached(reached: (boolean | undefined)[]) {
@@ -64,21 +67,17 @@ export default function Diagram(props: DiagramProps) {
     );
   }
 
+  const status = props.enabled ?
+    Array.from(statusFromReached(props.reached)) :
+    Array(4).fill('initial');
+  console.log(status);
+
   // Generates a function that calls props.onBaseClicked(base) if the previous
   // bases are filled in
   const genOnBaseClicked = (base: number) =>
     () => {
-      if (props.onBaseClicked !== undefined) {
-        // check: are we on the previous base?
-        for (let i = base - 1; i > 0; --i) {
-          if (!props.reached[i]) { return; }
-        }
-
-        // check: clicking a basepath that was an extra base from whatever
-        // happened before shouldn't work
-        if (props.results[base] === '') { return; }
-
-        props.onBaseClicked(base);
+      if (status[base] != 'initial') {
+          props.onBaseClicked(base);
       }
     };
 
@@ -88,8 +87,6 @@ export default function Diagram(props: DiagramProps) {
   const reachedThird = reachedHome || props.reached[2];
   const reachedSecond = reachedThird || props.reached[1];
   const reachedFirst = reachedSecond || props.reached[0];
-
-  const status = Array.from(statusFromReached(props.reached));
 
   return (
     <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="110" height="100"

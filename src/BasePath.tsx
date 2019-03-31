@@ -50,6 +50,7 @@ export default function BasePath(props: BasePathProps) {
 
     baseLine = (
       <React.Fragment>
+        <line x1={ax} y1={ay} x2={x2} y2={y2} className="base-line initial" />
         <line x1={x1} y1={y1} x2={ax} y2={ay} className={baseLineClass} />
         <line x1={ax + orthx * scale} y1={ay - orthy * scale}
               x2={ax - orthx * scale} y2={ay + orthy * scale}
@@ -64,7 +65,6 @@ export default function BasePath(props: BasePathProps) {
 
   return (
     <React.Fragment>
-      <line x1={x1} y1={y1} x2={x2} y2={y2} className={baseLineClass} />
       {baseLine}
       <text x={labelPosition.x} y={labelPosition.y} textAnchor={labelPosition.anchor}>{props.result}</text>
       <rect fillOpacity="0" x={xmin} y={ymin} width={width} height={height} onClick={props.handleClick} />
