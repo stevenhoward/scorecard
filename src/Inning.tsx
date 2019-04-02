@@ -1,13 +1,15 @@
 import React, { Component } from 'react';
+import {connect} from 'react-redux';
+import {AppState} from './redux/reducers';
+import {addPlay, clearFrom} from './redux/actions';
 import PlateAppearance from './PlateAppearance';
-import {PlayFragment} from './Play';
+import {IndexedPlayFragment, PlayFragment} from './redux/types';
 
 interface InningProps {
   battingOrder: any[];
-}
-
-interface InningState {
-  indexedFragments: { fragment: PlayFragment, index: number }[];
+  addPlay: typeof addPlay;
+  clearFrom: typeof clearFrom;
+  indexedFragments: IndexedPlayFragment[];
 }
 
 // https://stackoverflow.com/questions/14446511/most-efficient-method-to-groupby-on-a-array-of-objects
@@ -18,14 +20,9 @@ function groupBy<T>(xs: T[], key: string): Array<Array<T>>  {
   }, {}));
 };
 
-export default class Inning extends Component<InningProps, InningState> {
-  constructor(props: InningProps) {
-    super(props);
-    this.state = { indexedFragments: [] };
-  }
-
+class Inning extends Component<InningProps, {}> {
   private getTotalBases() : {index: number, bases: number}[] {
-    return groupBy(this.state.indexedFragments, 'index').
+    return groupBy(this.props.indexedFragments, 'index').
       // ensure batter is not out
       filter(group => group.findIndex(x => x.fragment.bases == 0) == -1).
       // add up total bases
@@ -61,8 +58,9 @@ export default class Inning extends Component<InningProps, InningState> {
 
   // User clicked an empty segment and we need to add it
   private handlePlayFragment(index: number, fragment: PlayFragment) {
-    let fragments = this.state.indexedFragments.
+    let fragments = this.props.indexedFragments.
       concat({ index: index, fragment: fragment});
+    this.props.addPlay({index, fragment});
 
     if (fragment.bases > 0) {
       const name = this.props.battingOrder[index % this.props.battingOrder.length];
@@ -77,39 +75,24 @@ export default class Inning extends Component<InningProps, InningState> {
         };
       });
 
-      fragments = fragments.concat(forcedRunners);
+      for (const runner of forcedRunners) {
+        this.props.addPlay(runner);
+      }
     }
-
-    this.setState({
-      indexedFragments: fragments
-    });
   }
 
   // The user clicked a filled in segment and we need to remove it from the data
   private handleClearFragment(index: number, base: number) {
-    const result = [];
-    let baseIndex = 0;
-
-    for (const i of this.state.indexedFragments) {
-      if (i.index == index && (baseIndex += i.fragment.bases) >= base) {
-        break;
-      }
-
-      result.push(i);
-    }
-
-    this.setState({
-      indexedFragments: result,
-    });
+    this.props.clearFrom(index, base);
   }
 
   render() {
-    const fragments = this.state.indexedFragments;
+    const fragments = this.props.indexedFragments;
 
     const getOutsBefore = (index: number) =>
       fragments.filter(f => f.fragment.bases === 0 && f.index < index).length;
 
-    const maxIndex = fragments.length ? Math.max.apply(null, fragments.map(f => f.index)) : 0;
+    const maxIndex = fragments.length ? Math.max.apply(null, fragments.map(f => f.index)) + 1 : 0;
     const outs = fragments.filter(f => f.fragment.bases == 0).length;
     let lastOut: number|null = null;
     if (outs == 3) {
@@ -135,3 +118,10 @@ export default class Inning extends Component<InningProps, InningState> {
   }
 }
 
+function mapStateToProps(state: AppState) {
+  return {
+    indexedFragments: state
+  };
+}
+
+export default connect(mapStateToProps, {addPlay, clearFrom})(Inning);

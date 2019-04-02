@@ -70,7 +70,6 @@ export default function Diagram(props: DiagramProps) {
   const status = props.enabled ?
     Array.from(statusFromReached(props.reached)) :
     Array(4).fill('initial');
-  console.log(status);
 
   // Generates a function that calls props.onBaseClicked(base) if the previous
   // bases are filled in

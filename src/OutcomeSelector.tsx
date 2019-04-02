@@ -48,11 +48,13 @@ class PlaySelectionOption extends Component<PlaySelectionOptionProps, PlaySelect
 
   render() {
     return (
-      <React.Fragment key={this.props.label}>
-        <li onClick={() => this.handleClick()}>
+      <React.Fragment>
+        <li onClick={() => this.handleClick()} key={this.props.label}>
           <a href="javascript: void(0)">{this.props.label}</a>
         </li>
-        <Dialog visible={this.state.showFielderSelector}
+        <Dialog
+          key={this.props.label + '-selectfielder'}
+          visible={this.state.showFielderSelector}
           onClose={() => this.setState({showFielderSelector: false})}>
           <SelectFielder allowMultiple={this.props.fielderInputs === 'many'}
                          onFielderSelected={this.props.onResult} />
