@@ -60,6 +60,7 @@ function* getForcedRunners(state: RootType, index: number, numBases: number) {
 }
 
 function* addPlay(state: RootType, indexedFragment: IndexedPlayFragment) {
+  yield* state;
   yield indexedFragment;
 
   const { index, fragment } = indexedFragment;
@@ -72,16 +73,24 @@ function* addPlay(state: RootType, indexedFragment: IndexedPlayFragment) {
         fragment: {
           label: label,
           bases: fragment.bases,
+          plateAppearance: fragment.plateAppearance,
         }
       };
     }
   }
 }
 
+function* addPlay2(state: RootType, indexedFragment: IndexedPlayFragment) {
+  yield* state;
+  yield indexedFragment;
+
+  const { index, fragment } = indexedFragment;
+}
+
 export function rootReducer(state=initialState, action: ActionTypes) {
   switch(action.type) {
     case ADD_PLAY:
-      return state.concat(Array.from(addPlay(state, action.payload)));
+      return Array.from(addPlay(state, action.payload));
 
     case CLEAR_FROM:
       return Array.from(clearFragmentsFrom(state, action.index, action.base));

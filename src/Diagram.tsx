@@ -55,21 +55,25 @@ export default function Diagram(props: DiagramProps) {
     );
   }
 
+  const status = props.enabled ?
+    Array.from(statusFromReached(props.reached)) :
+    Array(4).fill('initial');
+
   let outDescriptionFragment: ReactNode = null;
   if (props.outDescription) {
     const description = ([] as string[]).concat(props.outDescription);
     // Vertically center the multiline text
     const offset = description.length * 15 / 2;
     outDescriptionFragment = (
-      <text className="out-description" x={50} y={50-offset}>
+      <text className="out-description" x={50} y={50-offset}
+      onClick={() => props.onBaseClicked(0)}>
         { description.map(desc => <tspan x={50} dy={15}>{desc}</tspan>) }
       </text>
     );
-  }
 
-  const status = props.enabled ?
-    Array.from(statusFromReached(props.reached)) :
-    Array(4).fill('initial');
+    // hack: if there's an out, display 'initial' status on the first base line
+    status[0] = 'did-not-reach';
+  }
 
   // Generates a function that calls props.onBaseClicked(base) if the previous
   // bases are filled in
@@ -79,13 +83,6 @@ export default function Diagram(props: DiagramProps) {
           props.onBaseClicked(base);
       }
     };
-
-  // order matters: we want to preserve 'false' values as distinct from
-  // 'undefined'
-  const reachedHome = props.reached[3];
-  const reachedThird = reachedHome || props.reached[2];
-  const reachedSecond = reachedThird || props.reached[1];
-  const reachedFirst = reachedSecond || props.reached[0];
 
   return (
     <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="110" height="100"

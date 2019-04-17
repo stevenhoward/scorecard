@@ -4,7 +4,7 @@ import Dialog from './Dialog';
 import BasePath, {BasePathProps} from './BasePath';
 import OutcomeSelector, {SelectedOutcome} from './OutcomeSelector';
 import Diagram from './Diagram';
-import {PlayFragment} from './Play';
+import {PlayFragment} from './redux/types';
 
 interface PlateAppearanceProps {
   enabled: boolean;
@@ -12,6 +12,7 @@ interface PlateAppearanceProps {
   onPlayFragment: (fragment: PlayFragment) => void;
   onClearFragment: (base: number) => void;
   fragments: PlayFragment[];
+  index: number;
 }
 
 interface PlateAppearanceState {
@@ -87,6 +88,7 @@ export default class PlateAppearance extends Component<PlateAppearanceProps, Pla
         this.props.onPlayFragment({
           bases: outcome.bases || 0,
           label: outcome.shorthand,
+          plateAppearance: this.props.index,
         });
 
         this.closeDialog();

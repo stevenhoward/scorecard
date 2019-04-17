@@ -12,7 +12,8 @@
   padding-bottom: 5px;
 }
 
-.base-line.initial {
+.base-line.initial,
+.base-line.did-not-reach {
   stroke: #888;
 }
 
@@ -82,6 +83,10 @@ a:hover {
 .out-description, .out-indicator-text {
   font-size-adjust: 0.5;
   text-anchor: middle;
+}
+
+.base-line.interactive, .out-description {
+  cursor: pointer;
 }
 
 @keyframes App-logo-spin {

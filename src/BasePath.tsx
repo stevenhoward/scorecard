@@ -26,7 +26,7 @@ function getLabelPosition(props: Rect) {
 
 export interface BasePathProps extends Rect {
   result?: string;
-  status: 'initial' | 'safe' | 'out' | 'interactive';
+  status: 'initial' | 'safe' | 'out' | 'interactive' | 'did-not-reach';
   handleClick: ()=>void;
 }
 
@@ -67,7 +67,8 @@ export default function BasePath(props: BasePathProps) {
     <React.Fragment>
       {baseLine}
       <text x={labelPosition.x} y={labelPosition.y} textAnchor={labelPosition.anchor}>{props.result}</text>
-      <rect fillOpacity="0" x={xmin} y={ymin} width={width} height={height} onClick={props.handleClick} />
+      <rect fillOpacity="0" x={xmin} y={ymin} width={width} height={height} onClick={props.handleClick}
+        className="base-line-click-target" />
     </React.Fragment>
   );
 }

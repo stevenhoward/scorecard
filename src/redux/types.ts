@@ -6,7 +6,9 @@ export interface PlayFragment {
   // runner reaches base)
   label: string;
 
-  rbi?: string;
+  plateAppearance: number;
+
+  rbis?: number;
 }
 
 // Play fragment that is associated with a particular plate appearance.

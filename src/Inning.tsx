@@ -36,7 +36,7 @@ class Inning extends Component<InningProps, {}> {
             onClearFragment={b => this.props.clearFrom(i, b)}
             fragments={fragments.filter(f => f.index == i).map(f => f.fragment)}
             key={i}
-            enabled={i <= maxIndex}
+            enabled={i <= maxIndex && getOutsBefore(i) != 3}
           />)
         }
       </div>
