@@ -43,32 +43,37 @@ function getBaseRunners(state: Play[]) : Array<number> {
   reduce((acc, cv) => {
     acc[cv.bases - 1] = cv.index;
     return acc;
-  }, Array(4));
+  }, Array(3));
 }
 
-function* getForcedRunners(state: Play[], index: number, numBases: number) {
-  const runners = getBaseRunners(state);
-  console.log(runners);
+function* getForcedRunners(state: Play[], index: number, numBases: number, label: string) : IterableIterator<IndexedPlayFragment> {
+  const bases = getBaseRunners(state);
+  console.log({ bases });
 
+  for (const base of bases) {
+    if (base === undefined) {
+      --numBases;
+    }
 
+    if (numBases === 0) {
+      break;
+    }
+
+    yield { index: base, fragment: { bases: numBases, label } };
+  }
 }
 
 function* addPlay(state: Play[], indexedFragment: IndexedPlayFragment): IterableIterator<Play> {
+  console.log(state);
   yield* state;
 
   const { index, fragment } = indexedFragment;
   const fragments = [indexedFragment];
 
-  const label = fragment.label == 'BB' ? fragment.label : '' + index;
+  const label = fragment.label == 'BB' ? 'BB' : `${index}`;
 
-  for (const runner of getForcedRunners(state, index, fragment.bases)) {
-    fragments.push({
-      index: runner.index,
-      fragment: {
-        label: label,
-        bases: runner.base,
-      }
-    });
+  for (let runner of getForcedRunners(state, index, fragment.bases, label)) {
+    fragments.push(runner);
   }
 
   yield { index: indexedFragment.index, fragments: fragments };
