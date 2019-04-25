@@ -1,35 +1,32 @@
 import React, { Component } from 'react';
 import {connect} from 'react-redux';
-import {AppState} from './redux/reducers';
 import {addPlay, clearFrom} from './redux/actions';
 import PlateAppearance from './PlateAppearance';
-import {IndexedPlayFragment, PlayFragment} from './redux/types';
+import {AppState, IndexedPlayFragment, Play, PlayFragment} from './redux/types';
 
 interface InningProps {
   battingOrder: any[];
   addPlay: typeof addPlay;
   clearFrom: typeof clearFrom;
-  indexedFragments: IndexedPlayFragment[];
+  plays: Play[]
 }
 
 class Inning extends Component<InningProps, {}> {
   render() {
-    const fragments = this.props.indexedFragments;
+    console.log(this.props.plays);
+    const fragments: IndexedPlayFragment[] = this.props.plays.flatMap(p => p.fragments);
 
     const getOutsBefore = (index: number) =>
       fragments.filter(f => f.fragment.bases === 0 && f.index < index).length;
 
     const maxIndex = fragments.length ? Math.max.apply(null, fragments.map(f => f.index)) + 1 : 0;
-    const outs = fragments.filter(f => f.fragment.bases == 0).length;
-    let lastOut: number|null = null;
-    if (outs == 3) {
 
-    }
+    const cells = Math.ceil((maxIndex + 1) / 9) * 9;
 
     return (
       <div className="inning-container">
         {
-        this.props.battingOrder.map((name, i) =>
+        Array(cells).fill(null).map((_, i) =>
           <PlateAppearance
             outsBefore={getOutsBefore(i)}
             onPlayFragment={f => this.props.addPlay({index: i, fragment: f})}
@@ -47,7 +44,7 @@ class Inning extends Component<InningProps, {}> {
 
 function mapStateToProps(state: AppState) {
   return {
-    indexedFragments: state
+    plays: state.plays,
   };
 }
 

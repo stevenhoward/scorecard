@@ -88,7 +88,6 @@ export default class PlateAppearance extends Component<PlateAppearanceProps, Pla
         this.props.onPlayFragment({
           bases: outcome.bases || 0,
           label: outcome.shorthand,
-          plateAppearance: this.props.index,
         });
 
         this.closeDialog();

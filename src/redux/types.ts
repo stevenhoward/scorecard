@@ -5,16 +5,23 @@ export interface PlayFragment {
   // Text that either goes on the baseline or in the middle (for outs before a
   // runner reaches base)
   label: string;
-
-  plateAppearance: number;
-
-  rbis?: number;
 }
 
-// Play fragment that is associated with a particular plate appearance.
 export interface IndexedPlayFragment {
+  // identifies which batter this fragment corresponds to (0 for top of the
+  // order in the 1st, and so on).
   index: number;
+
   fragment: PlayFragment;
+}
+
+export interface Play {
+  index: number;
+  fragments: IndexedPlayFragment[];
+}
+
+export interface AppState {
+  plays: Play[];
 }
 
 export interface AddPlayAction {
@@ -28,4 +35,8 @@ export interface ClearFromAction {
   base: number;
 }
 
-export type ActionTypes = AddPlayAction | ClearFromAction;
+export interface AdvanceRunnerAction {
+  type: 'ADVANCE_RUNNER';
+}
+
+export type ActionTypes = AddPlayAction | AdvanceRunnerAction | ClearFromAction;

@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "homepage": "./",
   "private": true,
+  "devDependencies": {
+    "babel-jest": "23.6.0"
+  },
   "dependencies": {
     "@types/jest": "23.3.13",
     "@types/node": "10.12.20",

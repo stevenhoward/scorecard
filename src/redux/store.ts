@@ -1,5 +1,5 @@
 import {createStore, applyMiddleware} from 'redux';
-import {rootReducer} from './reducers';
+import rootReducer from './reducers';
 
 function logger({ getState }: {getState: () => any}) {
   return (next: any) => (action: any) => {

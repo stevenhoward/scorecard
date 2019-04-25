@@ -36,3 +36,7 @@ know if a runner on second will score on a single, e.g. Need to provide some
 form of input.
 
 Need to cue the user on inputs that currently require attention. Green baseline?
+
+
+Current data model is a flat list of IndexedPlayFragments. New data model is a
+list of Plays, each Play containing its fragments.
