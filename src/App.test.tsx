@@ -47,3 +47,58 @@ it('adds a play', () => {
   expect(playReducer([], addPlay(fragment))).
     toEqual([{ index: 0, fragments: [fragment] }]);
 });
+
+it('advances the runner', () => {
+  const fragments = [
+    { index: 0, fragment: { bases: 1, label: '1B' } },
+    { index: 1, fragment: { bases: 1, label: '1B' } },
+    { index: 2, fragment: { bases: 1, label: 'BB' } },
+  ];
+
+  let result = [];
+  for (const f of fragments) {
+    result = playReducer(result, addPlay(f));
+  }
+
+  expect(result).toEqual([
+    {
+      fragments: [
+        {
+          fragment: { bases: 1, label: "1B", },
+          index: 0,
+        },
+      ],
+      index: 0,
+    },
+    {
+      fragments: [
+        {
+          fragment: { bases: 1, label: "1B", },
+          index: 1,
+        },
+        {
+          fragment: { bases: 1, label: "1", },
+          index: 0,
+        },
+      ],
+      index: 1,
+    },
+    {
+      fragments: [
+        {
+          fragment: { bases: 1, label: "BB", },
+          index: 2,
+        },
+        {
+          fragment: { bases: 1, label: "BB", },
+          index: 1,
+        },
+        {
+          fragment: { bases: 1, label: "BB", },
+          index: 0,
+        },
+      ],
+      index: 2,
+    },
+  ]);
+});

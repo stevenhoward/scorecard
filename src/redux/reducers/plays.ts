@@ -38,51 +38,20 @@ function getTotalBases(state: Play[]) : {index: number, bases: number}[] {
     });
 }
 
-function getBaseRunners(state: Play[]) : {index: number, base: number}[] {
+function getBaseRunners(state: Play[]) : Array<number> {
   return getTotalBases(state).filter(ib => ib.bases < 4).
-    // renaming "bases" to "base" feels a little silly, but more readable
-    map(ib => ({index: ib.index, base: ib.bases} as any)).
-    sort((a, b) => a.base - b.base);
+  reduce((acc, cv) => {
+    acc[cv.bases - 1] = cv.index;
+    return acc;
+  }, Array(4));
 }
 
 function* getForcedRunners(state: Play[], index: number, numBases: number) {
   const runners = getBaseRunners(state);
-  let base = 1;
-  for (const runner of runners) {
-    let _bases = numBases;
-    while (base < runner.base) {
-      ++base;
-      --_bases;
-    }
+  console.log(runners);
 
-    if (_bases > 0 && runner.index < index) {
-      yield runner;
-    }
-  }
+
 }
-
-  /*
-function* addPlay(state: Play[], indexedFragment: IndexedPlayFragment) {
-  yield* state;
-  yield indexedFragment;
-
-  const { index, fragment } = indexedFragment;
-
-  if (fragment.bases > 0) {
-    const label = fragment.label == 'BB' ? fragment.label : '' + index;
-    for (const runner of [...getForcedRunners(state, index, fragment.bases)].reverse()) {
-      yield {
-        index: runner.index,
-        fragment: {
-          label: label,
-          bases: fragment.bases,
-          plateAppearance: fragment.plateAppearance,
-        }
-      };
-    }
-  }
-}
-   */
 
 function* addPlay(state: Play[], indexedFragment: IndexedPlayFragment): IterableIterator<Play> {
   yield* state;

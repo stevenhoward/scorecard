@@ -13,7 +13,6 @@ interface InningProps {
 
 class Inning extends Component<InningProps, {}> {
   render() {
-    console.log(this.props.plays);
     const fragments: IndexedPlayFragment[] = this.props.plays.flatMap(p => p.fragments);
 
     const getOutsBefore = (index: number) =>
