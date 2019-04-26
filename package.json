@@ -4,7 +4,8 @@
   "homepage": "./",
   "private": true,
   "devDependencies": {
-    "babel-jest": "23.6.0"
+    "core-js": "^3.0.1",
+    "redux-devtools": "^3.5.0"
   },
   "dependencies": {
     "@types/jest": "23.3.13",
@@ -34,8 +35,5 @@
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ],
-  "devDependencies": {
-    "redux-devtools": "^3.5.0"
-  }
+  ]
 }

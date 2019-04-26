@@ -47,26 +47,26 @@ function getTotalBases(state: Play[]) : {index: number, bases: number}[] {
 
 function getBaseRunners(state: Play[]) : Array<number> {
   return getTotalBases(state).filter(ib => ib.bases < 4).
-  reduce((acc, cv) => {
-    acc[cv.bases - 1] = cv.index;
-    return acc;
-  }, Array(3));
+    reduce((acc, cv) => {
+      acc[cv.bases - 1] = cv.index;
+      return acc;
+    }, Array(3));
 }
 
 function* getForcedRunners(state: Play[], index: number, numBases: number, label: string) : IterableIterator<IndexedPlayFragment> {
   const bases = getBaseRunners(state);
 
   for (const base of bases) {
-    if (base === undefined) {
-      --numBases;
-      continue;
-    }
-
-    if (numBases <= 0) {
+    if (numBases == 0) {
       break;
     }
 
-    yield { index: base, fragment: { bases: numBases, label } };
+    if (base === undefined) {
+      --numBases;
+    }
+    else {
+      yield { index: base, fragment: { bases: numBases, label } };
+    }
   }
 }
 
@@ -74,18 +74,44 @@ function* addPlay(state: Play[], indexedFragment: IndexedPlayFragment): Iterable
   yield* state;
 
   const { index, fragment } = indexedFragment;
-  const fragments = [indexedFragment];
-
   const label = fragment.label == 'BB' ? 'BB' : `${index}`;
 
-  for (let runner of getForcedRunners(state, index, fragment.bases, label)) {
-    fragments.push(runner);
-  }
-
-  yield { index: indexedFragment.index, fragments: fragments };
+  yield {
+    index,
+    fragments: [indexedFragment, ...getForcedRunners(state, index, fragment.bases, label)]
+  };
 }
 
-const initialState = ([] as Play[]);
+function* advanceRunner(state: Play[], runnerIndex: number, batterIndex: number, bases: number) {
+  for (const play of state) {
+    const fragments = play.fragments.map(f => {
+      if (f.index == runnerIndex) {
+        return {
+          index: f.index,
+          fragment: {
+            bases: bases,
+            label: f.fragment.label
+          }
+        }
+      }
+      else {
+        return f;
+      }
+    });
+
+    if (play.index == batterIndex) {
+      yield {
+        index: playIndex,
+        fragments
+      };
+    }
+    else {
+      yield play;
+    }
+  }
+}
+
+const initialState: Play[] = [];
 
 export function playReducer(state = initialState, action: ActionTypes): Play[] {
   switch(action.type) {

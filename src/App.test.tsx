@@ -1,32 +1,4 @@
-// todo: isn't this bullshit what Babel is for? npm run works; npm test doesn't.
-if (!Array.prototype.flat) {
-  Array.prototype.flat = function() {
-    var depth = arguments[0];
-    depth = depth === undefined ? 1 : Math.floor(depth);
-    if (depth < 1) return Array.prototype.slice.call(this);
-    return (function flat(arr, depth) {
-      var len = arr.length >>> 0;
-      var flattened = [];
-      var i = 0;
-      while (i < len) {
-        if (i in arr) {
-          var el = arr[i];
-          if (Array.isArray(el) && depth > 0)
-            flattened = flattened.concat(flat(el, depth - 1));
-          else flattened.push(el);
-        }
-        i++;
-      }
-      return flattened;
-    })(this, depth);
-  };
-}
-
-if (!Array.prototype.flatMap) {
-  Array.prototype.flatMap = function() {
-    return Array.prototype.map.apply(this, arguments).flat(1);
-  };
-}
+import 'core-js';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -137,4 +109,8 @@ it("clears runners correctly", () => {
 
   const result = playReducer(initial, clearFrom(1, 0));
   expect(result).toEqual(initial.slice(0, 1));
+});
+
+it("advances runners extra bases", () => {
+
 });
