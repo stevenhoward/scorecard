@@ -1,26 +1,33 @@
 import {ADD_PLAY, ADVANCE_RUNNER, CLEAR_FROM} from '../actionTypes';
 import {Play, PlayFragment, IndexedPlayFragment, ActionTypes, AppState} from '../types';
 
+interface Dict<T> {
+  [key: string]: T;
+}
+
+function groupBy<T>(xs: T[], keyFunc: (t: T) => number | string): T[][] {
+  return Object.values(xs.reduce((rv: Dict<T[]>, x: T) => {
+    const key = keyFunc(x);
+    rv[key] = [...(rv[key] || []), x];
+    return rv;
+  }, {}));
+}
+
 function* clearFragmentsFrom(state: Play[], index: number, base: number) {
   let baseIndex = 0;
 
   for (const play of state) {
     for (const { index: playIndex, fragment } of play.fragments) {
-      if (playIndex == index && (baseIndex += fragment.bases) >= base) {
-        break;
+      if (playIndex == index) {
+        baseIndex += fragment.bases;
+        if (baseIndex >= base) {
+          return;
+        }
       }
     }
 
     yield play;
   }
-}
-
-function groupBy<T>(xs: T[], keyFunc: (t: T) => number | string): T[][] {
-  return Object.values(xs.reduce((rv: any, x: T) => {
-    const key = keyFunc(x);
-    rv[key] = [...(rv[key] || []), x];
-    return rv;
-  }, {}));
 }
 
 function getTotalBases(state: Play[]) : {index: number, bases: number}[] {
@@ -48,14 +55,14 @@ function getBaseRunners(state: Play[]) : Array<number> {
 
 function* getForcedRunners(state: Play[], index: number, numBases: number, label: string) : IterableIterator<IndexedPlayFragment> {
   const bases = getBaseRunners(state);
-  console.log({ bases });
 
   for (const base of bases) {
     if (base === undefined) {
       --numBases;
+      continue;
     }
 
-    if (numBases === 0) {
+    if (numBases <= 0) {
       break;
     }
 
@@ -64,7 +71,6 @@ function* getForcedRunners(state: Play[], index: number, numBases: number, label
 }
 
 function* addPlay(state: Play[], indexedFragment: IndexedPlayFragment): IterableIterator<Play> {
-  console.log(state);
   yield* state;
 
   const { index, fragment } = indexedFragment;

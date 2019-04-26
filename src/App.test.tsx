@@ -48,7 +48,13 @@ it('adds a play', () => {
     toEqual([{ index: 0, fragments: [fragment] }]);
 });
 
-it('advances the runner', () => {
+it('adds a double', () => {
+  const fragment = { index: 0, fragment: { bases: 2, label: '2B' } };
+  expect(playReducer([], addPlay(fragment))).
+    toEqual([{ index: 0, fragments: [fragment] }]);
+});
+
+it('forces runners', () => {
   const fragments = [
     { index: 0, fragment: { bases: 1, label: '1B' } },
     { index: 1, fragment: { bases: 1, label: '1B' } },
@@ -101,4 +107,34 @@ it('advances the runner', () => {
       index: 2,
     },
   ]);
+});
+
+it("clears runners correctly", () => {
+  const initial = [
+    {
+      fragments: [
+        {
+          fragment: { bases: 1, label: "1B", },
+          index: 0,
+        },
+      ],
+      index: 0,
+    },
+    {
+      fragments: [
+        {
+          fragment: { bases: 1, label: "1B", },
+          index: 1,
+        },
+        {
+          fragment: { bases: 1, label: "1", },
+          index: 0,
+        },
+      ],
+      index: 1,
+    },
+  ];
+
+  const result = playReducer(initial, clearFrom(1, 0));
+  expect(result).toEqual(initial.slice(0, 1));
 });
