@@ -37,6 +37,9 @@ export interface ClearFromAction {
 
 export interface AdvanceRunnerAction {
   type: 'ADVANCE_RUNNER';
+  runnerIndex: number;
+  batterIndex: number;
+  bases: number;
 }
 
 export type ActionTypes = AddPlayAction | AdvanceRunnerAction | ClearFromAction;

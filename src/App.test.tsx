@@ -6,7 +6,7 @@ import App from './App';
 
 import {playReducer} from './redux/reducers/plays';
 import {store} from './redux/store';
-import {addPlay, clearFrom} from './redux/actions';
+import {addPlay, advanceRunner, clearFrom} from './redux/actions';
 
 it('renders without crashing', () => {
   const div = document.createElement('div');
@@ -33,48 +33,29 @@ it('forces runners', () => {
     { index: 2, fragment: { bases: 1, label: 'BB' } },
   ];
 
-  let result = [];
-  for (const f of fragments) {
-    result = playReducer(result, addPlay(f));
-  }
+  let result = fragments.reduce(
+    (state, fragment) => playReducer(state, addPlay(fragment)),
+    []);
 
   expect(result).toEqual([
     {
       fragments: [
-        {
-          fragment: { bases: 1, label: "1B", },
-          index: 0,
-        },
+        { index: 0, fragment: { bases: 1, label: "1B" } },
       ],
       index: 0,
     },
     {
       fragments: [
-        {
-          fragment: { bases: 1, label: "1B", },
-          index: 1,
-        },
-        {
-          fragment: { bases: 1, label: "1", },
-          index: 0,
-        },
+        { index: 1, fragment: { bases: 1, label: "1B" } },
+        { index: 0, fragment: { bases: 1, label: "1" } },
       ],
       index: 1,
     },
     {
       fragments: [
-        {
-          fragment: { bases: 1, label: "BB", },
-          index: 2,
-        },
-        {
-          fragment: { bases: 1, label: "BB", },
-          index: 1,
-        },
-        {
-          fragment: { bases: 1, label: "BB", },
-          index: 0,
-        },
+        { index: 2, fragment: { bases: 1, label: "BB" } },
+        { index: 1, fragment: { bases: 1, label: "BB" } },
+        { index: 0, fragment: { bases: 1, label: "BB" } },
       ],
       index: 2,
     },
@@ -82,35 +63,43 @@ it('forces runners', () => {
 });
 
 it("clears runners correctly", () => {
-  const initial = [
-    {
-      fragments: [
-        {
-          fragment: { bases: 1, label: "1B", },
-          index: 0,
-        },
-      ],
-      index: 0,
-    },
-    {
-      fragments: [
-        {
-          fragment: { bases: 1, label: "1B", },
-          index: 1,
-        },
-        {
-          fragment: { bases: 1, label: "1", },
-          index: 0,
-        },
-      ],
-      index: 1,
-    },
+  const fragments = [
+    { index: 0, fragment: { bases: 1, label: "1B" } },
+    { index: 1, fragment: { bases: 1, label: "1B" } }
   ];
+
+  const initial = fragments.reduce(
+    (state, fragment) => playReducer(state, addPlay(fragment)),
+    []);
 
   const result = playReducer(initial, clearFrom(1, 0));
   expect(result).toEqual(initial.slice(0, 1));
 });
 
 it("advances runners extra bases", () => {
+  const fragments = [
+    { index: 0, fragment: { bases: 1, label: "1B" } },
+    { index: 1, fragment: { bases: 1, label: "1B" } }
+  ];
 
+  const initial = fragments.reduce(
+    (state, fragment) => playReducer(state, addPlay(fragment)),
+    []);
+
+  const result = playReducer(initial, advanceRunner(0, 1, 2));
+  expect(result).toEqual([
+    {
+      fragments: [
+        { index: 0, fragment: { bases: 1, label: "1B" } },
+      ],
+      index: 0,
+    },
+    {
+      fragments: [
+        { index: 1, fragment: { bases: 1, label: "1B" } },
+        { index: 0, fragment: { bases: 2, label: "1" } },
+      ],
+      index: 1,
+    },
+  ]);
 });

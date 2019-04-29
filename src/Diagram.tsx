@@ -67,11 +67,10 @@ export default function Diagram(props: DiagramProps) {
     outDescriptionFragment = (
       <text className="out-description" x={50} y={50-offset}
       onClick={() => props.onBaseClicked(0)}>
-        { description.map(desc => <tspan x={50} dy={15}>{desc}</tspan>) }
+        { description.map(desc => <tspan x={50} dy={15} key={desc}>{desc}</tspan>) }
       </text>
     );
 
-    // hack: if there's an out, display 'initial' status on the first base line
     status[0] = 'did-not-reach';
   }
 

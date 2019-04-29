@@ -1,10 +1,12 @@
 import React, { Component, CSSProperties, ReactNode } from 'react';
+
+import {PlayFragment} from './redux/types';
+
 import SelectFielder from './SelectFielder';
 import Dialog from './Dialog';
-import BasePath, {BasePathProps} from './BasePath';
-import OutcomeSelector, {SelectedOutcome} from './OutcomeSelector';
+import BasePath from './BasePath';
+import PlaySelector from './PlaySelector';
 import Diagram from './Diagram';
-import {PlayFragment} from './redux/types';
 
 interface PlateAppearanceProps {
   enabled: boolean;
@@ -12,6 +14,8 @@ interface PlateAppearanceProps {
   onPlayFragment: (fragment: PlayFragment) => void;
   onClearFragment: (base: number) => void;
   fragments: PlayFragment[];
+
+  // Batter index, zero-based from the top of the first.
   index: number;
 }
 
@@ -84,18 +88,14 @@ export default class PlateAppearance extends Component<PlateAppearanceProps, Pla
       this.props.onClearFragment(base);
     }
     else {
-      const onSelectOutcome = (outcome: SelectedOutcome) => {
-        this.props.onPlayFragment({
-          bases: outcome.bases || 0,
-          label: outcome.shorthand,
-        });
-
+      const onPlayFragment = (outcome: PlayFragment) => {
+        this.props.onPlayFragment(outcome);
         this.closeDialog();
       }
 
       this.setState({
         dialogVisible: true,
-        dialogContents: <OutcomeSelector base={base} onSelectOutcome={onSelectOutcome} />,
+        dialogContents: <PlaySelector onPlayFragment={onPlayFragment} />,
       });
     }
   }

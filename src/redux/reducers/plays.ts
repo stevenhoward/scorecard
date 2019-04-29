@@ -1,12 +1,12 @@
 import {ADD_PLAY, ADVANCE_RUNNER, CLEAR_FROM} from '../actionTypes';
 import {Play, PlayFragment, IndexedPlayFragment, ActionTypes, AppState} from '../types';
 
-interface Dict<T> {
-  [key: string]: T;
+interface GroupDict<T> {
+  [key: string]: T[];
 }
 
 function groupBy<T>(xs: T[], keyFunc: (t: T) => number | string): T[][] {
-  return Object.values(xs.reduce((rv: Dict<T[]>, x: T) => {
+  return Object.values(xs.reduce((rv: GroupDict<T>, x: T) => {
     const key = keyFunc(x);
     rv[key] = [...(rv[key] || []), x];
     return rv;
@@ -45,7 +45,7 @@ function getTotalBases(state: Play[]) : {index: number, bases: number}[] {
     });
 }
 
-function getBaseRunners(state: Play[]) : Array<number> {
+export function getBaseRunners(state: Play[]) : Array<number> {
   return getTotalBases(state).filter(ib => ib.bases < 4).
     reduce((acc, cv) => {
       acc[cv.bases - 1] = cv.index;
@@ -101,7 +101,7 @@ function* advanceRunner(state: Play[], runnerIndex: number, batterIndex: number,
 
     if (play.index == batterIndex) {
       yield {
-        index: playIndex,
+        index: play.index,
         fragments
       };
     }
@@ -122,7 +122,7 @@ export function playReducer(state = initialState, action: ActionTypes): Play[] {
       return Array.from(clearFragmentsFrom(state, action.index, action.base));
 
     case ADVANCE_RUNNER:
-      return state;
+      return Array.from(advanceRunner(state, action.runnerIndex, action.batterIndex, action.bases));
 
     default:
       return state;
