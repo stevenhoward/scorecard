@@ -17,8 +17,8 @@ function* clearFragmentsFrom(state: Play[], index: number, base: number) {
   let baseIndex = 0;
 
   for (const play of state) {
-    for (const { index: playIndex, bases } of play.fragments) {
-      if (playIndex == index) {
+    for (const { runnerIndex, bases } of play.fragments) {
+      if (runnerIndex == index) {
         baseIndex += bases;
         if (baseIndex >= base) {
           return;
@@ -33,15 +33,15 @@ function* clearFragmentsFrom(state: Play[], index: number, base: number) {
 // Returns an array with the total number of bases for each player who's not
 // out.
 function getTotalBases(state: Play[]) : {index: number, bases: number}[] {
-  const flatState = state.map((play, index) => play.fragments).flat();
+  const flatState = state.flatMap((play, index) => play.fragments);
 
-  return groupBy(flatState, x => x.index).
+  return groupBy(flatState, x => x.runnerIndex).
     // ensure batter is not out
     filter(group => group.findIndex(x => x.bases == 0) == -1).
     // add up total bases
     map(group => {
       return {
-        index: group[0].index,
+        index: group[0].runnerIndex,
         bases: group.reduce((a, c) => a += c.bases, 0)
       };
     });
@@ -69,7 +69,7 @@ function* getForcedRunners(state: Play[], index: number, numBases: number, label
       --numBases;
     }
     else {
-      yield { index: runnerIndex, bases: numBases, label, };
+      yield { runnerIndex, bases: numBases, label, };
     }
   }
 }
@@ -80,7 +80,7 @@ function computeRbis(state: Play[], fragments: PlayFragment[]) {
 
   for (let i = 0; i < 3; ++i) {
     if (runners[i] != undefined) {
-      const advance = fragments.find(f => f.index === runners[i]);
+      const advance = fragments.find(f => f.runnerIndex === runners[i]);
       if (advance && i + 1 + advance.bases >= 4) {
         ++rbis;
       }
@@ -93,7 +93,7 @@ function computeRbis(state: Play[], fragments: PlayFragment[]) {
 function* addPlay(state: Play[], fragment: PlayFragment): IterableIterator<Play> {
   yield* state;
 
-  const { index, label, bases } = fragment;
+  const { runnerIndex: index, label, bases } = fragment;
   const advancedRunnerLabel = label == 'BB' ? 'BB' : `#${index}`;
 
   const fragments = [fragment, ...getForcedRunners(state, index, bases, advancedRunnerLabel)];
@@ -103,7 +103,8 @@ function* addPlay(state: Play[], fragment: PlayFragment): IterableIterator<Play>
   yield { index, fragments, rbis, hit: false };
 }
 
-function* advanceRunner(state: Play[], runnerIndex: number, batterIndex: number, bases: number) {
+function* advanceRunner(state: Play[], runnerIndex: number, batterIndex: number, bases: number):
+ IterableIterator<Play> {
   const runners = getBaseRunners(state);
   let resultsInRbi = false;
 
@@ -122,7 +123,7 @@ function* advanceRunner(state: Play[], runnerIndex: number, batterIndex: number,
         rbis: rbis + (resultsInRbi ? 1 : 0),
         fragments: [
           ...fragments,
-          { index: runnerIndex, bases: bases, label: `#${batterIndex}` },
+          { runnerIndex, bases, label: `#${batterIndex}` },
         ],
         hit: play.hit,
       };

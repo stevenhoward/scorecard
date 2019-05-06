@@ -18,9 +18,11 @@ class Inning extends Component<InningProps, {}> {
     const fragments: PlayFragment[] = this.props.plays.flatMap(p => p.fragments);
 
     const getOutsBefore = (index: number) =>
-      fragments.filter(f => f.bases === 0 && f.index < index).length;
+      fragments.filter(f => f.bases === 0 && f.runnerIndex < index).length;
 
-    const maxIndex = fragments.length ? Math.max.apply(null, fragments.map(f => f.index)) + 1 : 0;
+    const maxIndex = fragments.length
+      ? Math.max.apply(null, this.props.plays.map(play => play.index)) + 1
+      : 0;
 
     // 9 cells with data = new column for 10th.
     const cells = Math.ceil((maxIndex + 1) / 9) * 9;
@@ -31,7 +33,7 @@ class Inning extends Component<InningProps, {}> {
         onPlayFragment={this.props.addPlay.bind(this)}
         onClearFragment={this.props.clearFrom.bind(this)}
         advanceRunner={this.props.advanceRunner.bind(this)}
-        fragments={fragments.filter(f => f.index == i)}
+        fragments={fragments.filter(f => f.runnerIndex == i)}
         rbis={this.props.plays[i] ? this.props.plays[i].rbis : 0}
         key={i}
         index={i}

@@ -1,5 +1,5 @@
 export interface PlayFragment {
-  index: number;
+  runnerIndex: number;
 
   // 0 to indicate an out
   bases: number;

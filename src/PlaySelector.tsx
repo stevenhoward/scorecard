@@ -40,7 +40,7 @@ class PlaySelector extends Component<PlaySelectorProps, PlaySelectorState> {
 
   private onCompletedOutcome(outcome: PlayOutcome) {
     this.props.onPlayFragment({
-      index: this.props.index,
+      runnerIndex: this.props.index,
       bases: outcome.bases,
       label: outcome.resultText(''),
     });
@@ -97,6 +97,7 @@ class PlaySelector extends Component<PlaySelectorProps, PlaySelectorState> {
       return <li key={outcome.label} onClick={() => this.advanceRunner(batterIndex)}>{outcome.label}</li>
     });
 
+    // this name is terrible. Outcomes not related to an advancing runner
     const possibleOutcomes = OutcomeTypes.filter(outcome =>
       outcome.onBase === undefined || outcome.onBase === this.props.onBase);
 
