@@ -9,10 +9,16 @@ import PlaySelector from './PlaySelector';
 import Diagram from './Diagram';
 
 interface PlateAppearanceProps {
-  enabled: boolean;
-  outsBefore: number;
   onPlayFragment: (fragment: PlayFragment) => void;
-  onClearFragment: (base: number) => void;
+
+  // User clicks a base in the diagram,
+  onClearFragment: (index: number, base: number) => void;
+
+  // Can the user interact with this plate appearance?
+  enabled: boolean;
+
+  // How many outs were recorded when this player got up to bat?
+  outsBefore: number;
   advanceRunner: (runnerIndex: number, batterIndex: number, bases: number) => void;
 
   // The play fragments describing just this player's motion on the base paths
@@ -76,12 +82,7 @@ export default class PlateAppearance extends Component<PlateAppearanceProps, Pla
       }
     }
 
-    return {
-      reached: reached,
-      results: results,
-      outDescription: outDescription,
-      outNumber: outNumber,
-    };
+    return { reached, results, outDescription, outNumber, };
   }
 
   closeDialog() {
@@ -90,7 +91,7 @@ export default class PlateAppearance extends Component<PlateAppearanceProps, Pla
 
   private handleBaseClicked(base: number) {
     if (this.state.reached.length > base || base == 0 && this.state.outNumber) {
-      this.props.onClearFragment(base);
+      this.props.onClearFragment(this.props.index, base);
     }
     else {
       const onPlayFragment = (outcome: PlayFragment) => {
@@ -108,7 +109,8 @@ export default class PlateAppearance extends Component<PlateAppearanceProps, Pla
         advanceRunner={advanceRunner}
         index={this.props.index}
         runners={[]}
-        succeedingBatters={[]} />;
+        succeedingBatters={[]}
+        onBase={base !== 0} />;
 
       this.setState({
         dialogVisible: true,

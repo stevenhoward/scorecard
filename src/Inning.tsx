@@ -22,25 +22,33 @@ class Inning extends Component<InningProps, {}> {
 
     const maxIndex = fragments.length ? Math.max.apply(null, fragments.map(f => f.index)) + 1 : 0;
 
+    // 9 cells with data = new column for 10th.
     const cells = Math.ceil((maxIndex + 1) / 9) * 9;
+
+    const plateAppearances = Array(cells).fill(null).map((_, i) =>
+      <PlateAppearance
+        outsBefore={getOutsBefore(i)}
+        onPlayFragment={this.props.addPlay.bind(this)}
+        onClearFragment={this.props.clearFrom.bind(this)}
+        advanceRunner={this.props.advanceRunner.bind(this)}
+        fragments={fragments.filter(f => f.index == i)}
+        rbis={this.props.plays[i] ? this.props.plays[i].rbis : 0}
+        key={i}
+        index={i}
+        enabled={i <= maxIndex}
+      />);
+
+    const columns = [];
+    for (let i = 0; i < plateAppearances.length; i += 9) {
+      columns.push(<div className="inning-column" key={i}>{plateAppearances.slice(i, i + 9)}</div>);
+    }
 
     return (
       <div className="inning-container">
         <div className="inning-header">{this.props.inningNumber}</div>
-        {
-        Array(cells).fill(null).map((_, i) =>
-          <PlateAppearance
-            outsBefore={getOutsBefore(i)}
-            onPlayFragment={this.props.addPlay.bind(this)}
-            onClearFragment={b => this.props.clearFrom(i, b)}
-            advanceRunner={this.props.advanceRunner.bind(this)}
-            fragments={fragments.filter(f => f.index == i)}
-            rbis={this.props.plays[i] ? this.props.plays[i].rbis : 0}
-            key={i}
-            index={i}
-            enabled={i <= maxIndex}
-          />)
-        }
+        <div className="inning-columns">
+          {columns}
+        </div>
       </div>
     )
   }

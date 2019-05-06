@@ -22,7 +22,9 @@ export interface PlayOutcome {
   // Did the batter get credited with a hit?
   hit?: boolean;
 
-  // Is this outcome only possible when already on base?
+  // true: can only happen to a runner
+  // false: can only happen to a batter
+  // undefined: no restriction
   onBase?: boolean;
 
   // Given the runners on base, can this play type happen?

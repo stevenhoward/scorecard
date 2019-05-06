@@ -1,9 +1,14 @@
-.inning-container {
+.inning-columns {
+  display: flex;
+  flex-flow: row;
+}
+
+.inning-column {
   display: flex;
   flex-flow: column;
 }
 
-.inning-container > * {
+.inning-column > * {
   margin-bottom: 2px;
 }
 
