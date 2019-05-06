@@ -1,6 +1,6 @@
 import React, { Component, CSSProperties, ReactNode } from 'react';
 
-import {PlayFragment} from './redux/types';
+import {Play,PlayFragment} from './redux/types';
 
 import SelectFielder from './SelectFielder';
 import Dialog from './Dialog';
@@ -13,7 +13,12 @@ interface PlateAppearanceProps {
   outsBefore: number;
   onPlayFragment: (fragment: PlayFragment) => void;
   onClearFragment: (base: number) => void;
+  advanceRunner: (runnerIndex: number, batterIndex: number, bases: number) => void;
+
+  // The play fragments describing just this player's motion on the base paths
   fragments: PlayFragment[];
+
+  rbis: number;
 
   // Batter index, zero-based from the top of the first.
   index: number;
@@ -89,13 +94,25 @@ export default class PlateAppearance extends Component<PlateAppearanceProps, Pla
     }
     else {
       const onPlayFragment = (outcome: PlayFragment) => {
-        this.props.onPlayFragment(outcome);
+        this.props.onPlayFragment({ index: this.props.index, ...outcome });
         this.closeDialog();
-      }
+      };
+
+      const advanceRunner = (runnerIndex: number, batterIndex: number, bases: number) => {
+        this.props.advanceRunner(runnerIndex, batterIndex, bases);
+        this.closeDialog();
+      };
+
+      const dialogContents = <PlaySelector
+        onPlayFragment={onPlayFragment}
+        advanceRunner={advanceRunner}
+        index={this.props.index}
+        runners={[]}
+        succeedingBatters={[]} />;
 
       this.setState({
         dialogVisible: true,
-        dialogContents: <PlaySelector onPlayFragment={onPlayFragment} />,
+        dialogContents
       });
     }
   }
@@ -110,6 +127,7 @@ export default class PlateAppearance extends Component<PlateAppearanceProps, Pla
           results={this.state.results}
           onBaseClicked={this.handleBaseClicked.bind(this)}
           enabled={this.props.enabled}
+          rbis={this.props.rbis}
         />
 
         <Dialog visible={this.state.dialogVisible} onClose={this.closeDialog.bind(this)}>

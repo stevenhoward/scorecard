@@ -1,22 +1,24 @@
 import React, { Component } from 'react';
 import {connect} from 'react-redux';
-import {addPlay, clearFrom} from './redux/actions';
+import {addPlay, clearFrom, advanceRunner} from './redux/actions';
 import PlateAppearance from './PlateAppearance';
-import {AppState, IndexedPlayFragment, Play, PlayFragment} from './redux/types';
+import {AppState, Play, PlayFragment} from './redux/types';
 
 interface InningProps {
-  battingOrder: any[];
   addPlay: typeof addPlay;
   clearFrom: typeof clearFrom;
+  advanceRunner: typeof advanceRunner;
   plays: Play[]
+
+  inningNumber: number;
 }
 
 class Inning extends Component<InningProps, {}> {
   render() {
-    const fragments: IndexedPlayFragment[] = this.props.plays.flatMap(p => p.fragments);
+    const fragments: PlayFragment[] = this.props.plays.flatMap(p => p.fragments);
 
     const getOutsBefore = (index: number) =>
-      fragments.filter(f => f.fragment.bases === 0 && f.index < index).length;
+      fragments.filter(f => f.bases === 0 && f.index < index).length;
 
     const maxIndex = fragments.length ? Math.max.apply(null, fragments.map(f => f.index)) + 1 : 0;
 
@@ -24,13 +26,16 @@ class Inning extends Component<InningProps, {}> {
 
     return (
       <div className="inning-container">
+        <div className="inning-header">{this.props.inningNumber}</div>
         {
         Array(cells).fill(null).map((_, i) =>
           <PlateAppearance
             outsBefore={getOutsBefore(i)}
-            onPlayFragment={f => this.props.addPlay({index: i, fragment: f})}
+            onPlayFragment={this.props.addPlay.bind(this)}
             onClearFragment={b => this.props.clearFrom(i, b)}
-            fragments={fragments.filter(f => f.index == i).map(f => f.fragment)}
+            advanceRunner={this.props.advanceRunner.bind(this)}
+            fragments={fragments.filter(f => f.index == i)}
+            rbis={this.props.plays[i] ? this.props.plays[i].rbis : 0}
             key={i}
             index={i}
             enabled={i <= maxIndex}
@@ -47,4 +52,4 @@ function mapStateToProps(state: AppState) {
   };
 }
 
-export default connect(mapStateToProps, {addPlay, clearFrom})(Inning);
+export default connect(mapStateToProps, {addPlay, clearFrom, advanceRunner})(Inning);

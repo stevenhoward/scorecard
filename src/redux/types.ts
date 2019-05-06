@@ -1,4 +1,6 @@
 export interface PlayFragment {
+  index: number;
+
   // 0 to indicate an out
   bases: number;
 
@@ -7,17 +9,17 @@ export interface PlayFragment {
   label: string;
 }
 
-export interface IndexedPlayFragment {
-  // identifies which batter this fragment corresponds to (0 for top of the
-  // order in the 1st, and so on).
-  index: number;
-
-  fragment: PlayFragment;
-}
-
 export interface Play {
+  // Index of this batter
   index: number;
-  fragments: IndexedPlayFragment[];
+
+  fragments: PlayFragment[];
+
+  // How many RBIs did the batter get?
+  rbis: number;
+
+  // Did the batter get a hit?
+  hit: boolean;
 }
 
 export interface AppState {
@@ -26,7 +28,7 @@ export interface AppState {
 
 export interface AddPlayAction {
   type: 'ADD_PLAY';
-  payload: IndexedPlayFragment;
+  payload: PlayFragment;
 }
 
 export interface ClearFromAction {

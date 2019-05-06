@@ -20,6 +20,8 @@ interface DiagramProps {
   reached: (boolean | undefined)[];
 
   onBaseClicked: (base: number) => void;
+
+  rbis: number;
 }
 
 function* statusFromReached(reached: (boolean | undefined)[]) {
@@ -74,6 +76,16 @@ export default function Diagram(props: DiagramProps) {
     status[0] = 'did-not-reach';
   }
 
+  const rbiCircles = [
+    { cx: 90, cy: 90, r: 3, stroke: 'black', fill: 'none', key: 0 },
+    { cx: 96, cy: 90, r: 3, stroke: 'black', fill: 'none', key: 1 },
+    { cx: 90, cy: 96, r: 3, stroke: 'black', fill: 'none', key: 2 },
+    { cx: 96, cy: 96, r: 3, stroke: 'black', fill: 'none', key: 3 },
+  ];
+
+  const rbisFragment = rbiCircles.slice(0, props.rbis)
+    .map(circleProps => <circle {...circleProps} />);
+
   // Generates a function that calls props.onBaseClicked(base) if the previous
   // bases are filled in
   const genOnBaseClicked = (base: number) =>
@@ -110,6 +122,7 @@ export default function Diagram(props: DiagramProps) {
 
       {outNumberFragment}
       {outDescriptionFragment}
+      {rbisFragment}
     </svg>
   )
 }

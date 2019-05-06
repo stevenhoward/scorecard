@@ -1,7 +1,7 @@
 import { ADD_PLAY } from './actionTypes';
-import { AddPlayAction, AdvanceRunnerAction, ClearFromAction, IndexedPlayFragment } from './types';
+import { AddPlayAction, AdvanceRunnerAction, ClearFromAction, PlayFragment } from './types';
 
-export function addPlay(fragment: IndexedPlayFragment): AddPlayAction {
+export function addPlay(fragment: PlayFragment): AddPlayAction {
   return {
     type: 'ADD_PLAY',
     payload: fragment

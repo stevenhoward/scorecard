@@ -92,10 +92,10 @@ export const OutcomeTypes: PlayOutcome[] = [
   {
     label: "Fielder's Choice",
     fielderInputs: 'many',
-    resultText: fielders => `FC ${assistHelper(fielders)}`,
+    resultText: fielders => `FC\n${assistHelper(fielders)}`,
     bases: 1,
     outs: 1,
-    available: runners => runners[0] !== undefined,
+    available: anyRunners,
   },
   {
     label: "Sacrifice Bunt",

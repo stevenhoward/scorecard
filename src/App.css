@@ -64,15 +64,31 @@ a:hover {
   color: #61dafb;
 }
 
+.inning-header {
+  width: 110px;
+}
+
+.inning-header {
+  font-weight: bold;
+  font-size: 1.5em;
+}
+
+.play-types li {
+  list-style-type: none;
+  text-align: left;
+}
+
 .fielder-selector {
   font-size-adjust: 0.3;
 }
 
-.fielder-selector text {
+.fielder-selector text,
+.play-types li {
   cursor: pointer;
 }
 
-.fielder-selector text:hover {
+.fielder-selector text:hover,
+.play-types li:hover {
   font-weight: bold;
 }
 

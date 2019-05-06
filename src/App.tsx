@@ -12,7 +12,7 @@ class App extends Component {
     return (
       <div className="App">
         <Provider store={store}>
-          <Inning battingOrder={['#6', '#9', '#10', '#28', '#35', '#18', '#52', '#12', '#40']} />
+          <Inning inningNumber={1} />
         </Provider>
       </div>
     );
