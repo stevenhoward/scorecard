@@ -78,6 +78,11 @@ function computeRbis(state: Play[], fragments: PlayFragment[]) {
   const runners = getBaseRunners(state);
   let rbis = 0;
 
+  if (fragments[0].label == "HR") {
+    // A home run is the only case where a batter bats himself in
+    ++rbis;
+  }
+
   for (let i = 0; i < 3; ++i) {
     if (runners[i] != undefined) {
       const advance = fragments.find(f => f.runnerIndex === runners[i]);

@@ -12,7 +12,8 @@ interface InningProps {
 
 class Inning extends Component<InningProps, {}> {
   render() {
-    const fragments: PlayFragment[] = this.props.plays.flatMap(p => p.fragments);
+    const { plays } = this.props;
+    const fragments: PlayFragment[] = plays.flatMap(p => p.fragments);
 
     const outs = fragments
       .filter(f => f.bases === 0)
@@ -23,7 +24,7 @@ class Inning extends Component<InningProps, {}> {
       }, [] as number[]);
 
     const maxIndex = fragments.length
-      ? Math.max.apply(null, this.props.plays.map(play => play.index)) + 1
+      ? Math.max.apply(null, plays.map(play => play.index)) + 1
       : 0;
 
     // 9 cells with data = new column for 10th.
@@ -33,9 +34,9 @@ class Inning extends Component<InningProps, {}> {
       <PlateAppearance
         outs={outs[i]}
         fragments={fragments.filter(f => f.runnerIndex == i)}
-        rbis={this.props.plays[i] ? this.props.plays[i].rbis : 0}
+        rbis={plays[i] ? plays[i].rbis : 0}
         key={i}
-        index={i}
+        index={plays[i] ? plays[i].index : maxIndex}
         enabled={i <= maxIndex}
       />);
 
