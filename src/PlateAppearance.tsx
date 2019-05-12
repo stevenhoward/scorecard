@@ -15,7 +15,7 @@ export interface OwnProps {
   enabled: boolean;
 
   // How many outs were recorded when this player got up to bat?
-  outsBefore: number;
+  outs: number;
 
   // The play fragments describing just this player's motion on the base paths
   fragments: PlayFragment[];
@@ -27,12 +27,14 @@ export interface OwnProps {
 }
 
 interface DispatchProps {
-  addPlay: typeof addPlay;
+  //
+  addPlay: (fragment: PlayFragment) => void;
+
+  // Moves a runner over on the bases
+  advanceRunner: (runnerIndex: number, batterIndex: number, bases: number) => void;
 
   // User clicks a base in the diagram,
   clearFrom: typeof clearFrom;
-
-  advanceRunner: typeof advanceRunner;
 }
 
 type PlateAppearanceProps = OwnProps & DispatchProps;
@@ -74,7 +76,7 @@ class PlateAppearance extends Component<PlateAppearanceProps, PlateAppearanceSta
     if (fragments.length == 1 && fragments[0].bases === 0) {
       // simple out, did not reach base.
       outDescription = fragments[0].label;
-      outNumber = props.outsBefore + 1;
+      outNumber = props.outs;
     }
     else {
       for (const f of fragments) {
@@ -115,8 +117,6 @@ class PlateAppearance extends Component<PlateAppearanceProps, PlateAppearanceSta
         addPlay={addPlay}
         advanceRunner={advanceRunner}
         index={this.props.index}
-        runners={[]}
-        succeedingBatters={[]}
         onBase={base !== 0} />;
 
       this.setState({

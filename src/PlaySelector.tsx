@@ -17,10 +17,10 @@ export interface OwnProps {
   onBase: boolean;
 
   //
-  addPlay: typeof addPlay;
+  addPlay: (fragment: PlayFragment) => void;
 
   // Moves a runner over on the bases
-  advanceRunner: typeof advanceRunner;
+  advanceRunner: (runnerIndex: number, batterIndex: number, bases: number) => void;
 }
 
 interface StateProps {

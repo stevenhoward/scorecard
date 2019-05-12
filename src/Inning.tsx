@@ -14,8 +14,13 @@ class Inning extends Component<InningProps, {}> {
   render() {
     const fragments: PlayFragment[] = this.props.plays.flatMap(p => p.fragments);
 
-    const getOutsBefore = (index: number) =>
-      fragments.filter(f => f.bases === 0 && f.runnerIndex < index).length;
+    const outs = fragments
+      .filter(f => f.bases === 0)
+      .map(f => f.runnerIndex)
+      .reduce((array, runnerIndex) => {
+        array[runnerIndex] = array.length + 1;
+        return array;
+      }, [] as number[]);
 
     const maxIndex = fragments.length
       ? Math.max.apply(null, this.props.plays.map(play => play.index)) + 1
@@ -26,7 +31,7 @@ class Inning extends Component<InningProps, {}> {
 
     const plateAppearances = Array(cells).fill(null).map((_, i) =>
       <PlateAppearance
-        outsBefore={getOutsBefore(i)}
+        outs={outs[i]}
         fragments={fragments.filter(f => f.runnerIndex == i)}
         rbis={this.props.plays[i] ? this.props.plays[i].rbis : 0}
         key={i}
