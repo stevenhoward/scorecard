@@ -1,13 +1,10 @@
 import React, { Component } from 'react';
 import {connect} from 'react-redux';
-import {addPlay, clearFrom, advanceRunner} from './redux/actions';
 import PlateAppearance from './PlateAppearance';
 import {AppState, Play, PlayFragment} from './redux/types';
+import {getCurrentInning} from './redux/selectors';
 
 interface InningProps {
-  addPlay: typeof addPlay;
-  clearFrom: typeof clearFrom;
-  advanceRunner: typeof advanceRunner;
   plays: Play[]
 
   inningNumber: number;
@@ -30,9 +27,6 @@ class Inning extends Component<InningProps, {}> {
     const plateAppearances = Array(cells).fill(null).map((_, i) =>
       <PlateAppearance
         outsBefore={getOutsBefore(i)}
-        onPlayFragment={this.props.addPlay.bind(this)}
-        onClearFragment={this.props.clearFrom.bind(this)}
-        advanceRunner={this.props.advanceRunner.bind(this)}
         fragments={fragments.filter(f => f.runnerIndex == i)}
         rbis={this.props.plays[i] ? this.props.plays[i].rbis : 0}
         key={i}
@@ -58,8 +52,8 @@ class Inning extends Component<InningProps, {}> {
 
 function mapStateToProps(state: AppState) {
   return {
-    plays: state.plays,
+    plays: getCurrentInning(state),
   };
 }
 
-export default connect(mapStateToProps, {addPlay, clearFrom, advanceRunner})(Inning);
+export default connect(mapStateToProps)(Inning);

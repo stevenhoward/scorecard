@@ -1,3 +1,5 @@
+// Represents something happening on the bases. Several of these can happen in a
+// play.
 export interface PlayFragment {
   runnerIndex: number;
 
@@ -9,22 +11,28 @@ export interface PlayFragment {
   label: string;
 }
 
+// Represents what happens when the batter gets on base or makes an out.
 export interface Play {
   // Index of this batter
   index: number;
 
-  fragments: PlayFragment[];
-
   // How many RBIs did the batter get?
+  // TODO: this is derived, and should not be part of the source of truth
   rbis: number;
 
   // Did the batter get a hit?
   hit: boolean;
+
+  // Which runners moved on the play?
+  fragments: PlayFragment[];
 }
 
+// Root object for the store
 export interface AppState {
   plays: Play[];
 }
+
+/* Action types */
 
 export interface AddPlayAction {
   type: 'ADD_PLAY';

@@ -6,3 +6,8 @@ export const runnersSelector = createSelector(
   (state: AppState) => state.plays,
   (plays: Play[]) => getBaseRunners(plays),
 );
+
+export const getCurrentInning = createSelector(
+  (state: AppState) => state.plays,
+  (plays: Play[]) => plays,
+);

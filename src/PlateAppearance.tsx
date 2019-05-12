@@ -1,6 +1,8 @@
 import React, { Component, CSSProperties, ReactNode } from 'react';
+import {connect} from 'react-redux';
 
 import {Play,PlayFragment} from './redux/types';
+import {addPlay, clearFrom, advanceRunner} from './redux/actions';
 
 import SelectFielder from './SelectFielder';
 import Dialog from './Dialog';
@@ -8,18 +10,12 @@ import BasePath from './BasePath';
 import PlaySelector from './PlaySelector';
 import Diagram from './Diagram';
 
-interface PlateAppearanceProps {
-  onPlayFragment: (fragment: PlayFragment) => void;
-
-  // User clicks a base in the diagram,
-  onClearFragment: (index: number, base: number) => void;
-
+export interface OwnProps {
   // Can the user interact with this plate appearance?
   enabled: boolean;
 
   // How many outs were recorded when this player got up to bat?
   outsBefore: number;
-  advanceRunner: (runnerIndex: number, batterIndex: number, bases: number) => void;
 
   // The play fragments describing just this player's motion on the base paths
   fragments: PlayFragment[];
@@ -29,6 +25,17 @@ interface PlateAppearanceProps {
   // Batter index, zero-based from the top of the first.
   index: number;
 }
+
+interface DispatchProps {
+  addPlay: typeof addPlay;
+
+  // User clicks a base in the diagram,
+  clearFrom: typeof clearFrom;
+
+  advanceRunner: typeof advanceRunner;
+}
+
+type PlateAppearanceProps = OwnProps & DispatchProps;
 
 interface PlateAppearanceState {
   dialogVisible: boolean;
@@ -42,7 +49,7 @@ interface PlateAppearanceState {
   results: (string | undefined)[];
 }
 
-export default class PlateAppearance extends Component<PlateAppearanceProps, PlateAppearanceState> {
+class PlateAppearance extends Component<PlateAppearanceProps, PlateAppearanceState> {
   constructor(props: PlateAppearanceProps) {
     super(props);
     this.state = {
@@ -91,11 +98,11 @@ export default class PlateAppearance extends Component<PlateAppearanceProps, Pla
 
   private handleBaseClicked(base: number) {
     if (this.state.reached.length > base || base == 0 && this.state.outNumber) {
-      this.props.onClearFragment(this.props.index, base);
+      this.props.clearFrom(this.props.index, base);
     }
     else {
-      const onPlayFragment = (outcome: PlayFragment) => {
-        this.props.onPlayFragment({ index: this.props.index, ...outcome });
+      const addPlay = (outcome: PlayFragment) => {
+        this.props.addPlay({ runnerIndex: this.props.index, ...outcome });
         this.closeDialog();
       };
 
@@ -105,7 +112,7 @@ export default class PlateAppearance extends Component<PlateAppearanceProps, Pla
       };
 
       const dialogContents = <PlaySelector
-        onPlayFragment={onPlayFragment}
+        addPlay={addPlay}
         advanceRunner={advanceRunner}
         index={this.props.index}
         runners={[]}
@@ -139,3 +146,6 @@ export default class PlateAppearance extends Component<PlateAppearanceProps, Pla
     );
   }
 }
+
+export default connect<{}, DispatchProps, OwnProps>(undefined, {addPlay, clearFrom, advanceRunner})
+  (PlateAppearance);

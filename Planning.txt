@@ -1,42 +1,75 @@
-Minimum viable feature: I want an interactive base diagram where I can enter
-anything I'd usually put into a box on the score card. I couldn't think of a
-good thing to call the box itself in the code, so I settled on PlateAppearance
-(though it's really the plate-appearance plus baserunning).
+Currently plays are stored as a flat list. I need to group them into innings so
+that there can be more than one. I'll then need to store one for each team.
 
-When I click on a base line, I should get a list of options for what gets
-recorded there. This could be a modal dialog, but on mobile I'm really liking
-the idea of a gesture-based interface. (Perhaps a mode that's specific to
-entering the current inning, and a separate mode for viewing the whole card).
+I think I want three different kinds of structures for data:
 
-Click 1st-base line
-* Hit/walk/error/HBP: fill line to first
-* Out: select defenders from a diagram, or use keyboard
+* Input (Outcome)
+* Storage
+* Rendering (PlayFragment)
 
+Rendering
+===
 
-Need to rethink design for passing data from the 'type of thing' dialog to the
-fielder selection dialog.
+batter = {
+  // Each at-bat gets an index that identifies the slot in the line-up,
+  // and hence the batter.
+  index: 0,
 
+  // One little dot
+  rbis: 1,
 
-Diagram now handles rendering. PlateAppearance has a position in between Inning
-(which should own the data) and Diagram (which just renders what it's told to
-render).
+  // No out
+  outNumber: undefined,
 
-PlayFragment should be a structure that encapsulates what happens between a
-player coming up to bat and scoring or making an out. PlateAppearance then
-translates a list of PlayFragments into the Diagram properties, and Inning
-maintains a list of PlayFragments grouped together (to link different players
-within the same play).
+  // empty label means "see previous base"
+  labels: ["HR", "", "", ""],
 
-Play = { player: _, fragment: PlayFragment }[]
-PlateAppearance = { player: _,  plays: PlayFragment[] }
+  // safe on each base
+  bases: [true, true, true, true],
+}
 
 
-Need to figure out how to advance runners. Force plays are obvious, but we can't
-know if a runner on second will score on a single, e.g. Need to provide some
-form of input.
+Storage
+===
 
-Need to cue the user on inputs that currently require attention. Green baseline?
+play = {
+  // Same as above
+  index: 0,
+
+  // needed for statistics
+  hit: true,
+
+  // baserunners that moved on the play
+  fragments: [
+    {
+      // Corresponds to the index on a Play object.
+      runnerIndex: 0,
+
+      // how many bases the runner moved. 0 means they made an out.
+      bases: 4,
+
+      // Label for the first section of this segment
+      label: "HR",
+    },
+  ],
+}
 
 
-Current data model is a flat list of IndexedPlayFragments. New data model is a
-list of Plays, each Play containing its fragments.
+Input
+===
+
+playSelection = {
+  // Same as above
+  label: "HR",
+
+  // Same as above
+  bases: 4,
+
+  // Same as above
+  hit: true,
+
+  // If this is one bigger than the top batter index in the store, this creates
+  // a new Play entry. Otherwise, it adds a fragment on a basepath for some
+  // other at-bat.
+  runnerIndex: 0,
+}

@@ -4,29 +4,37 @@ import {connect} from 'react-redux';
 import {AppState,PlayFragment} from './redux/types';
 import {PlayOutcome,OutcomeTypes} from './outcomeTypes';
 import {runnersSelector} from './redux/selectors';
+import {addPlay, advanceRunner} from './redux/actions';
 
 import SelectFielder from './SelectFielder';
 import Dialog from './Dialog';
 
-interface PlaySelectorProps {
+export interface OwnProps {
   // Runner index
   index: number;
 
   // Are we moving a runner or batting?
   onBase: boolean;
 
+  //
+  addPlay: typeof addPlay;
+
+  // Moves a runner over on the bases
+  advanceRunner: typeof advanceRunner;
+}
+
+interface StateProps {
   // 3-tuple indicating the numbers of players on base
   runners: number[];
 
   // List of batters who put a ball in play and could advance a runner
   succeedingBatters: number[];
-
-  // Returns the selected play
-  onPlayFragment: (playFragment: PlayFragment) => void;
-
-  // Moves a runner over on the bases
-  advanceRunner: (runnerIndex: number, batterIndex: number, bases: number) => void;
 }
+
+interface DispatchProps {
+}
+
+type PlaySelectorProps = OwnProps & DispatchProps & StateProps;
 
 interface PlaySelectorState {
   pendingFielder?: PlayOutcome;
@@ -39,7 +47,7 @@ class PlaySelector extends Component<PlaySelectorProps, PlaySelectorState> {
   }
 
   private onCompletedOutcome(outcome: PlayOutcome) {
-    this.props.onPlayFragment({
+    this.props.addPlay({
       runnerIndex: this.props.index,
       bases: outcome.bases,
       label: outcome.resultText(''),
@@ -117,7 +125,7 @@ class PlaySelector extends Component<PlaySelectorProps, PlaySelectorState> {
   }
 }
 
-function mapStateToProps(state: AppState, ownProps: PlaySelectorProps) {
+function mapStateToProps(state: AppState, ownProps: OwnProps): StateProps {
   const { index } = ownProps;
 
   return {
