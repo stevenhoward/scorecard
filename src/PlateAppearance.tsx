@@ -1,8 +1,8 @@
 import React, { Component, CSSProperties, ReactNode } from 'react';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 
-import {Play,PlayFragment} from './redux/types';
-import {addPlay, clearFrom, advanceRunner} from './redux/actions';
+import { Play, PlayFragment } from './redux/types';
+import { addPlay, clearFrom } from './redux/actions';
 
 import SelectFielder from './SelectFielder';
 import Dialog from './Dialog';
@@ -29,9 +29,6 @@ export interface OwnProps {
 interface DispatchProps {
   //
   addPlay: (fragment: PlayFragment) => void;
-
-  // Moves a runner over on the bases
-  advanceRunner: (runnerIndex: number, batterIndex: number, bases: number) => void;
 
   // User clicks a base in the diagram,
   clearFrom: typeof clearFrom;
@@ -108,14 +105,8 @@ class PlateAppearance extends Component<PlateAppearanceProps, PlateAppearanceSta
         this.closeDialog();
       };
 
-      const advanceRunner = (runnerIndex: number, batterIndex: number, bases: number) => {
-        this.props.advanceRunner(runnerIndex, batterIndex, bases);
-        this.closeDialog();
-      };
-
       const dialogContents = <PlaySelector
         addPlay={addPlay}
-        advanceRunner={advanceRunner}
         index={this.props.index}
         onBase={base !== 0} />;
 
@@ -147,5 +138,5 @@ class PlateAppearance extends Component<PlateAppearanceProps, PlateAppearanceSta
   }
 }
 
-export default connect<{}, DispatchProps, OwnProps>(undefined, {addPlay, clearFrom, advanceRunner})
+export default connect<{}, DispatchProps, OwnProps>(undefined, {addPlay, clearFrom})
   (PlateAppearance);

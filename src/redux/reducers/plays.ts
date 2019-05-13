@@ -1,5 +1,5 @@
-import {ADD_PLAY, ADVANCE_RUNNER, CLEAR_FROM} from '../actionTypes';
-import {Play, PlayFragment, ActionTypes, AppState} from '../types';
+import {ADD_PLAY, CLEAR_FROM} from '../actionTypes';
+import {Play, PlayOutcome, PlayFragment, ActionTypes, AppState} from '../types';
 
 interface GroupDict<T> {
   [key: string]: T[];
@@ -95,47 +95,42 @@ function computeRbis(state: Play[], fragments: PlayFragment[]) {
   return rbis;
 }
 
-function* addPlay(state: Play[], fragment: PlayFragment): IterableIterator<Play> {
-  yield* state;
+function* addPlay(state: Play[], outcome: PlayOutcome): IterableIterator<Play> {
+  const { runnerIndex, bases, label, hit } = outcome;
 
-  const { runnerIndex: index, label, bases } = fragment;
-  const advancedRunnerLabel = label == 'BB' ? 'BB' : `#${index}`;
+  const fragment = { runnerIndex, bases, label, };
 
-  const fragments = [fragment, ...getForcedRunners(state, index, bases, advancedRunnerLabel)];
+  // Index of the last batter to record a play. The _current_ batter will be one
+  // greater
+  const maxIndex = Math.max(...state.map(play => play.index));
 
-  const rbis = computeRbis(state, fragments);
+  if (maxIndex >= 0 && runnerIndex <= maxIndex) {
+    // If the runner is not the current batter, amend the previous at bat
+    yield* state.slice(0, -1);
 
-  yield { index, fragments, rbis, hit: false };
-}
+    const lastPlay = state[state.length - 1];
+    const fragments = [...lastPlay.fragments, fragment];
+    const rbis = computeRbis(state, fragments);
 
-function* advanceRunner(state: Play[], runnerIndex: number, batterIndex: number, bases: number):
- IterableIterator<Play> {
-  const runners = getBaseRunners(state);
-  let resultsInRbi = false;
-
-  for (let i = 0; i < 3; ++i) {
-    if (runners[i] === runnerIndex && i + 1 + bases === 4) {
-      resultsInRbi = true;
-    }
+    yield {
+      ...lastPlay,
+      fragments,
+      rbis,
+    };
   }
+  else {
+    yield* state;
 
-  for (const play of state) {
-    const { index, rbis, fragments, hit } = play;
+    const advancedRunnerLabel = label == 'BB' ? 'BB' : `#${runnerIndex}`;
 
-    if (index == batterIndex) {
-      yield {
-        index,
-        rbis: rbis + (resultsInRbi ? 1 : 0),
-        fragments: [
-          ...fragments,
-          { runnerIndex, bases, label: `#${batterIndex}` },
-        ],
-        hit: play.hit,
-      };
-    }
-    else {
-      yield play;
-    }
+    const fragments = [
+      fragment,
+      ...getForcedRunners(state, runnerIndex, bases, advancedRunnerLabel)
+    ];
+
+    const rbis = computeRbis(state, fragments);
+
+    yield { index: runnerIndex, fragments, rbis, hit: !!hit, };
   }
 }
 
@@ -148,9 +143,6 @@ export function playReducer(state = initialState, action: ActionTypes): Play[] {
 
     case CLEAR_FROM:
       return Array.from(clearFragmentsFrom(state, action.index, action.base));
-
-    case ADVANCE_RUNNER:
-      return Array.from(advanceRunner(state, action.runnerIndex, action.batterIndex, action.bases));
 
     default:
       return state;

@@ -81,35 +81,3 @@ it("clears runners correctly", () => {
   const result = playReducer(initial, clearFrom(1, 0));
   expect(result).toEqual(initial.slice(0, 1));
 });
-
-/*
-it("advances runners extra bases", () => {
-  const fragments = [
-    { index: 0, fragment: { bases: 1, label: "1B" } },
-    { index: 1, fragment: { bases: 1, label: "1B" } }
-  ];
-
-  const initial = fragments.reduce(
-    (state, fragment) => playReducer(state, addPlay(fragment)),
-    []);
-
-  const result = playReducer(initial, advanceRunner(0, 1, 2));
-  expect(result).toEqual([
-    {
-      fragments: [
-        { index: 0, fragment: { bases: 1, label: "1B" } },
-      ],
-      index: 0,
-      rbis: 0,
-    },
-    {
-      fragments: [
-        { index: 1, fragment: { bases: 1, label: "1B" } },
-        { index: 0, fragment: { bases: 1, label: "1", hit: false } },
-      ],
-      index: 1,
-      rbis: 1,
-    },
-  ]);
-});
- */

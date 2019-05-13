@@ -1,3 +1,50 @@
+interface PlayOutcomeBase {
+  // How many bases this player advanced
+  bases: number;
+
+  // Number of outs, default zero
+  // TODO: this is probably better left as a boolean
+  outs?: number;
+
+  // Did the batter get credited with a hit?
+  hit?: boolean;
+}
+
+// Represents an option that the user might be able to select for a play
+export interface PlayOption extends PlayOutcomeBase {
+  // Label in the interface
+  name: string;
+
+  // Given the runners on base, can this play type happen?
+  // Default is always available
+  available?: (runners: number[]) => boolean;
+
+  // true: can only happen to a runner
+  // false: can only happen to a batter
+  // undefined: no restriction
+  onBase?: boolean;
+
+  // Default: no fielders needed
+  // 'one': e.g. 'L8'
+  // 'many': '4-3' or '3U'
+  fielderInputs?: 'one' | 'many';
+
+  // Display name for what happened
+  //  hit: () => ('1B')
+  //  lineout: fielder => `L${fielder}`
+  // parameter is empty if fielderInputs is undefined
+  resultText: (fielders: string) => string;
+}
+
+// Represents the outcome of a selected option, including any selected fielders
+export interface PlayOutcome extends PlayOutcomeBase {
+  // Label displayed in the diagram along this particular base path
+  // Derived from resultText on PlayOption
+  label: string;
+
+  runnerIndex: number;
+}
+
 // Represents something happening on the bases. Several of these can happen in a
 // play.
 export interface PlayFragment {
@@ -36,7 +83,7 @@ export interface AppState {
 
 export interface AddPlayAction {
   type: 'ADD_PLAY';
-  payload: PlayFragment;
+  payload: PlayOutcome;
 }
 
 export interface ClearFromAction {

@@ -1,36 +1,4 @@
-export interface PlayOutcome {
-  // Label in the interface
-  label: string;
-
-  // Display name for what happened
-  //  hit: () => ('1B')
-  //  lineout: fielder => `L${fielder}`
-  // parameter is empty if fielderInputs is undefined
-  resultText: (fielders: string) => string;
-
-  // Default: no fielders needed
-  // 'one': e.g. 'L8'
-  // 'many': '4-3' or '3U'
-  fielderInputs?: 'one' | 'many';
-
-  // How many bases this player advanced
-  bases: number;
-
-  // Number of outs, default zero
-  outs?: number;
-
-  // Did the batter get credited with a hit?
-  hit?: boolean;
-
-  // true: can only happen to a runner
-  // false: can only happen to a batter
-  // undefined: no restriction
-  onBase?: boolean;
-
-  // Given the runners on base, can this play type happen?
-  // Default is always available
-  available?: (runners: number[]) => boolean;
-}
+import { PlayOption } from './redux/types';
 
 function assistHelper(fielders: string) {
   if (fielders.length == 1) {
@@ -44,55 +12,55 @@ function assistHelper(fielders: string) {
 const anyRunners = (runners: number[]) =>
   runners.find(b => b !== undefined) != undefined;
 
-export const OutcomeTypes: PlayOutcome[] = [
+export const OutcomeTypes: PlayOption[] = [
   {
-    label: "Single",
+    name: "Single",
     resultText: () => `1B`,
     bases: 1,
     hit: true,
   },
   {
-    label: "Double",
+    name: "Double",
     resultText: () => `2B`,
     bases: 2,
     hit: true,
   },
   {
-    label: "Triple",
+    name: "Triple",
     resultText: () => `3B`,
     bases: 3,
     hit: true,
   },
   {
-    label: "Home Run",
+    name: "Home Run",
     resultText: () => `HR`,
     bases: 4,
     hit: true,
   },
   {
-    label: "Base on balls",
+    name: "Base on balls",
     resultText: () => `BB`,
     bases: 1,
   },
   {
-    label: "Hit by pitch",
+    name: "Hit by pitch",
     resultText: () => `HBP`,
     bases: 1,
   },
   {
-    label: "Strikeout swinging",
+    name: "Strikeout swinging",
     resultText: () => 'K',
     bases: 0,
     outs: 1,
   },
   {
-    label: "Strikeout looking",
+    name: "Strikeout looking",
     resultText: () => unescape('%uA4D8'),
     bases: 0,
     outs: 1,
   },
   {
-    label: "Fielder's Choice",
+    name: "Fielder's Choice",
     fielderInputs: 'many',
     resultText: fielders => `FC\n${assistHelper(fielders)}`,
     bases: 1,
@@ -100,7 +68,7 @@ export const OutcomeTypes: PlayOutcome[] = [
     available: anyRunners,
   },
   {
-    label: "Sacrifice Bunt",
+    name: "Sacrifice Bunt",
     fielderInputs: 'many',
     resultText: fielders => `SAC ${assistHelper(fielders)}`,
     bases: 0,
@@ -108,7 +76,7 @@ export const OutcomeTypes: PlayOutcome[] = [
     available: anyRunners,
   },
   {
-    label: "Sacrifice fly",
+    name: "Sacrifice fly",
     fielderInputs: 'one',
     resultText: fielder => `SF ${fielder}`,
     bases: 0,
@@ -116,28 +84,28 @@ export const OutcomeTypes: PlayOutcome[] = [
     available: runners => runners[2] !== undefined,
   },
   {
-    label: "Groundout",
+    name: "Groundout",
     fielderInputs: 'many',
     resultText: fielders => assistHelper(fielders),
     bases: 0,
     outs: 1,
   },
   {
-    label: "Flyout",
+    name: "Flyout",
     fielderInputs: 'one',
     resultText: fielder => `${fielder}`,
     bases: 0,
     outs: 1,
   },
   {
-    label: "Lineout",
+    name: "Lineout",
     fielderInputs: 'one',
     resultText: fielder => `L${fielder}`,
     bases: 0,
     outs: 1,
   },
   {
-    label: "Grounded into double play",
+    name: "Grounded into double play",
     fielderInputs: 'many',
     resultText: fielders => `${assistHelper(fielders)} DP`,
     bases: 0,
@@ -145,33 +113,33 @@ export const OutcomeTypes: PlayOutcome[] = [
     available: runners => runners[0] !== undefined,
   },
   {
-    label: "Caught Stealing",
+    name: "Caught Stealing",
     onBase: true,
     resultText: () => `CS`,
     bases: 0,
     outs: 1,
   },
   {
-    label: "Pick off",
+    name: "Pick off",
     onBase: true,
     resultText: () => `PO`,
     bases: 0,
     outs: 1,
   },
   {
-    label: "Stolen Base",
+    name: "Stolen Base",
     resultText: () => `SB`,
     bases: 1,
     onBase: true,
   },
   {
-    label: "Wild Pitch",
+    name: "Wild Pitch",
     resultText: () => `WP`,
     bases: 1,
     onBase: true,
   },
   {
-    label: "Passed Ball",
+    name: "Passed Ball",
     resultText: () => `PB`,
     bases: 1,
     onBase: true,

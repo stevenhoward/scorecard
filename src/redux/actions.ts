@@ -1,10 +1,10 @@
 import { ADD_PLAY } from './actionTypes';
-import { AddPlayAction, AdvanceRunnerAction, ClearFromAction, PlayFragment } from './types';
+import { AddPlayAction, AdvanceRunnerAction, ClearFromAction, PlayOutcome } from './types';
 
-export function addPlay(fragment: PlayFragment): AddPlayAction {
+export function addPlay(outcome: PlayOutcome): AddPlayAction {
   return {
     type: 'ADD_PLAY',
-    payload: fragment
+    payload: outcome
   };
 }
 
@@ -13,14 +13,5 @@ export function clearFrom(index: number, base: number): ClearFromAction {
     type: 'CLEAR_FROM',
     index,
     base
-  };
-}
-
-export function advanceRunner(runnerIndex: number, batterIndex: number, bases: number): AdvanceRunnerAction {
-  return {
-    type: 'ADVANCE_RUNNER',
-    runnerIndex,
-    batterIndex,
-    bases
   };
 }
