@@ -60,6 +60,7 @@ export function getBaseRunners(state: Play[]) : Array<number> {
 function* getForcedRunners(state: Play[], index: number, numBases: number, label: string) : IterableIterator<PlayFragment> {
   const runners = getBaseRunners(state);
 
+  let startBase = 1;
   for (const runnerIndex of runners) {
     if (numBases == 0) {
       break;
@@ -69,8 +70,11 @@ function* getForcedRunners(state: Play[], index: number, numBases: number, label
       --numBases;
     }
     else {
-      yield { runnerIndex, bases: numBases, label, };
+      const bases = Math.min(4 - startBase, numBases);
+      yield { runnerIndex, bases, label, };
     }
+
+    ++startBase;
   }
 }
 

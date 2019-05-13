@@ -14,8 +14,8 @@ export interface OwnProps {
   // Can the user interact with this plate appearance?
   enabled: boolean;
 
-  // How many outs were recorded when this player got up to bat?
-  outs: number;
+  // If this runner recorded an out, which one was it?
+  outs: number | undefined;
 
   // The play fragments describing just this player's motion on the base paths
   fragments: PlayFragment[];

@@ -11,20 +11,49 @@ interface InningProps {
 }
 
 class Inning extends Component<InningProps, {}> {
-  render() {
+  private renderStatistics() {
     const { plays } = this.props;
+    const hits = plays.filter(play => play.hit).length;
+    const totalBases = plays.flatMap(p => p.fragments).reduce(
+      (rv, x) => {
+        rv.set(x.runnerIndex, (rv.get(x.runnerIndex) || 0) + x.bases);
+        return rv;
+      },
+      new Map<number, number>());
+
+    const runs = [...totalBases.values()].filter(bases => bases == 4).length;
+
+    return (
+      <table className="statistics">
+        <tbody>
+          <tr>
+            <th>Runs</th>
+            <td>{runs}</td>
+          </tr>
+
+          <tr>
+            <th>Hits</th>
+            <td>{hits}</td>
+          </tr>
+        </tbody>
+      </table>
+    );
+  }
+
+  render() {
+    const { inningNumber, plays } = this.props;
     const fragments: PlayFragment[] = plays.flatMap(p => p.fragments);
 
     const outs = fragments
       .filter(f => f.bases === 0)
       .map(f => f.runnerIndex)
-      .reduce((array, runnerIndex) => {
-        array[runnerIndex] = array.length + 1;
-        return array;
-      }, [] as number[]);
+      .reduce((map, runnerIndex) => {
+        map.set(runnerIndex, map.size + 1);
+        return map;
+      }, new Map<number, number>());
 
     const maxIndex = fragments.length
-      ? Math.max.apply(null, plays.map(play => play.index)) + 1
+      ? Math.max(...plays.map(play => play.index)) + 1
       : 0;
 
     // 9 cells with data = new column for 10th.
@@ -32,7 +61,7 @@ class Inning extends Component<InningProps, {}> {
 
     const plateAppearances = Array(cells).fill(null).map((_, i) =>
       <PlateAppearance
-        outs={outs[i]}
+        outs={outs.get(i)}
         fragments={fragments.filter(f => f.runnerIndex == i)}
         rbis={plays[i] ? plays[i].rbis : 0}
         key={i}
@@ -47,10 +76,11 @@ class Inning extends Component<InningProps, {}> {
 
     return (
       <div className="inning-container">
-        <div className="inning-header">{this.props.inningNumber}</div>
+        <div className="inning-header">{inningNumber}</div>
         <div className="inning-columns">
           {columns}
         </div>
+        {this.renderStatistics()}
       </div>
     )
   }

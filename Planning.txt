@@ -1,75 +1,13 @@
-Currently plays are stored as a flat list. I need to group them into innings so
-that there can be more than one. I'll then need to store one for each team.
+Currently all PlayFragments are grouped under their corresponding Play objects,
+but for stolen bases, caught stealing, and what have you, they need to be stored
+independently of the plate appearance data. Otherwise we wind up with an edge
+case where stealing home credits the batter with an RBI, e.g.
 
-I think I want three different kinds of structures for data:
+Should account for the number of outs in the play selector. Can't have a
+sacrifice with 2 outs, e.g.
 
-* Input (Outcome)
-* Storage
-* Rendering (PlayFragment)
+There are some cases where we can do the "smart" thing and don't yet, like for a
+fielder's choice play with only one runner on, or a sacrifice fly (which by
+definition scores a runner from third).
 
-Rendering
-===
-
-batter = {
-  // Each at-bat gets an index that identifies the slot in the line-up,
-  // and hence the batter.
-  index: 0,
-
-  // One little dot
-  rbis: 1,
-
-  // No out
-  outNumber: undefined,
-
-  // empty label means "see previous base"
-  labels: ["HR", "", "", ""],
-
-  // safe on each base
-  bases: [true, true, true, true],
-}
-
-
-Storage
-===
-
-play = {
-  // Same as above
-  index: 0,
-
-  // needed for statistics
-  hit: true,
-
-  // baserunners that moved on the play
-  fragments: [
-    {
-      // Corresponds to the index on a Play object.
-      runnerIndex: 0,
-
-      // how many bases the runner moved. 0 means they made an out.
-      bases: 4,
-
-      // Label for the first section of this segment
-      label: "HR",
-    },
-  ],
-}
-
-
-Input
-===
-
-playSelection = {
-  // Same as above
-  label: "HR",
-
-  // Same as above
-  bases: 4,
-
-  // Same as above
-  hit: true,
-
-  // If this is one bigger than the top batter index in the store, this creates
-  // a new Play entry. Otherwise, it adds a fragment on a basepath for some
-  // other at-bat.
-  runnerIndex: 0,
-}
+Should add statistics at the bottom of each inning.
