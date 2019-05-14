@@ -96,7 +96,7 @@ export default function Diagram(props: DiagramProps) {
     };
 
   return (
-    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="110" height="100"
+    <svg viewBox="-10 0 120 100" xmlns="http://www.w3.org/2000/svg" width="110" height="100"
       className="base-path-diagram">
 
       <BasePath

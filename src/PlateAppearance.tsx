@@ -63,7 +63,7 @@ class PlateAppearance extends Component<PlateAppearanceProps, PlateAppearanceSta
     // as a whole, i.e. in chronologically-ordered chunks.
     // state needs that data only in terms of which bases a player reached and
     // how.
-    const fragments = props.fragments;
+    const { fragments } = props;
 
     let outDescription: (string | undefined);
     let outNumber: (number | undefined);
@@ -77,6 +77,10 @@ class PlateAppearance extends Component<PlateAppearanceProps, PlateAppearanceSta
     }
     else {
       for (const f of fragments) {
+        if (f.bases == 0) {
+          outNumber = props.outs;
+        }
+
         reached.push(f.bases > 0);
         results.push(f.label);
 

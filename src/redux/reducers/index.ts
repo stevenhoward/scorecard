@@ -1,4 +1,12 @@
-import {combineReducers} from 'redux';
-import {playReducer} from './plays';
+import { AppState, ActionTypes } from '../types';
+import { playReducer } from './plays';
 
-export default combineReducers({ plays: playReducer });
+const initialState: AppState = {
+  plays: [],
+};
+
+export default function combinedReducer(state = initialState, action: ActionTypes) {
+  return {
+    plays: [...playReducer(state.plays, action)],
+  }
+}

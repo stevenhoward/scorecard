@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 import { AppState, AvailabilityFilter, PlayOption, PlayOutcome, PlayFragment } from './redux/types';
 import { OutcomeTypes } from './outcomeTypes';
-import { getOutsInInning, runnersSelector } from './redux/selectors';
+import { getOutsInInning, getBaseRunners } from './redux/selectors';
 
 import SelectFielder from './SelectFielder';
 import Dialog from './Dialog';
@@ -100,21 +100,41 @@ class PlaySelector extends Component<PlaySelectorProps, PlaySelectorState> {
           for (const filter of filters) {
             // TODO: consistency
             const isBatter = !onBase;
-            if (!filter(runners, outsInInning, isBatter)) {
+            if (!filter({ runners, outs: outsInInning, isBatter })) {
               return false;
             }
           }
         }
 
         return true;
-      }).
-      map(outcome => {
-        const { name } = outcome;
-
-        return <li key={name} onClick={() => this.outcomeSelected(outcome)}>{name}</li>
       });
 
-    return <ul className="play-types">{[...advanceOutcomes, ...otherOutcomes]}</ul>;
+    const [ nonOuts, outs ] = [...advanceOutcomes, ...otherOutcomes].reduce(
+      (rv, outcome) => {
+        const madeOut = outcome.bases === 0 ? 1 : 0;
+        rv[madeOut] = [...rv[madeOut], outcome];
+        return rv;
+      },
+      [ [] as PlayOption[], [] as PlayOption[] ],
+    );
+
+    const renderOption = (outcome: PlayOption) => {
+      const { name } = outcome;
+      return <li key={name} onClick={() => this.outcomeSelected(outcome)}>{name}</li>
+    };
+
+    return (
+      <div className="play-types">
+        <fieldset>
+          <legend>No outs</legend>
+          <ul> {nonOuts.map(renderOption)} </ul>
+        </fieldset>
+        <fieldset>
+          <legend>Outs</legend>
+          <ul> {outs.map(renderOption)} </ul>
+        </fieldset>
+      </div>
+    );
   }
 }
 
@@ -122,7 +142,7 @@ function mapStateToProps(state: AppState, ownProps: OwnProps): StateProps {
   const { index } = ownProps;
 
   return {
-    runners: runnersSelector(state),
+    runners: getBaseRunners(state),
     outsInInning: getOutsInInning(state),
     succeedingBatters: state.plays.filter(p => p.index > index).map(p => p.index),
   };

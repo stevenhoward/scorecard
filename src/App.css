@@ -1,9 +1,36 @@
+:root {
+  --top-row-height: 35px;
+}
+
+.game {
+  display: flex;
+  flex-flow: row;
+}
+
+.lineup {
+  padding-top: var(--top-row-height);
+  margin-right: 10px;
+}
+
+.lineup .slot {
+  height: 100px;
+}
+
+.lineup .slotNumber {
+  color: #888;
+}
+
+.jersey-number {
+  margin-left: 2px;
+  width: 3em;
+}
+
 .inning-columns {
   display: flex;
   flex-flow: row;
 }
 
-.inning-column {
+.inning-column, .lineup {
   display: flex;
   flex-flow: column;
 }
@@ -70,10 +97,8 @@ a:hover {
 }
 
 .inning-header {
+  height: var(--top-row-height);
   width: 110px;
-}
-
-.inning-header {
   font-weight: bold;
   font-size: 1.5em;
 }

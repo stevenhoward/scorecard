@@ -2,19 +2,24 @@ import React, { Component } from 'react';
 import {connect} from 'react-redux';
 import PlateAppearance from './PlateAppearance';
 import {AppState, Play, PlayFragment} from './redux/types';
-import {getCurrentInningPlays} from './redux/selectors';
+import { getCurrentInningPlays, getCurrentInningFragments } from './redux/selectors';
 
-interface InningProps {
-  plays: Play[]
-
+export interface OwnProps {
   inningNumber: number;
 }
 
+interface StateProps {
+  plays: Play[]
+  fragments: PlayFragment[];
+}
+
+type InningProps = OwnProps & StateProps
+
 class Inning extends Component<InningProps, {}> {
   private renderStatistics() {
-    const { plays } = this.props;
+    const { plays, fragments } = this.props;
     const hits = plays.filter(play => play.hit).length;
-    const totalBases = plays.flatMap(p => p.fragments).reduce(
+    const totalBases = fragments.reduce(
       (rv, x) => {
         rv.set(x.runnerIndex, (rv.get(x.runnerIndex) || 0) + x.bases);
         return rv;
@@ -41,8 +46,7 @@ class Inning extends Component<InningProps, {}> {
   }
 
   render() {
-    const { inningNumber, plays } = this.props;
-    const fragments: PlayFragment[] = plays.flatMap(p => p.fragments);
+    const { inningNumber, fragments, plays } = this.props;
 
     const outs = fragments
       .filter(f => f.bases === 0)
@@ -52,7 +56,7 @@ class Inning extends Component<InningProps, {}> {
         return map;
       }, new Map<number, number>());
 
-    const maxIndex = fragments.length
+    const maxIndex = plays.length
       ? Math.max(...plays.map(play => play.index)) + 1
       : 0;
 
@@ -89,6 +93,7 @@ class Inning extends Component<InningProps, {}> {
 function mapStateToProps(state: AppState) {
   return {
     plays: getCurrentInningPlays(state),
+    fragments: getCurrentInningFragments(state),
   };
 }
 

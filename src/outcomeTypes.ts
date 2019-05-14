@@ -1,4 +1,4 @@
-import { PlayOption } from './redux/types';
+import { PlayFragment, PlayOption } from './redux/types';
 
 function assistHelper(fielders: string) {
   if (fielders.length == 1) {
@@ -10,12 +10,57 @@ function assistHelper(fielders: string) {
 }
 
 // convenient filters for plays
-const anyRunners = (runners: number[]) =>
+const anyRunners = ({ runners } : { runners: number[] }) =>
   runners.find(b => b !== undefined) != undefined;
 
-const isBatter = (runners: number[], outs: number, isBatter: boolean) => isBatter;
+const isBatter = ({ isBatter }: { isBatter: boolean }) => isBatter;
 
-const isNotBatter = (runners: number[], outs: number, isBatter: boolean) => !isBatter;
+const isNotBatter = ({ isBatter }: { isBatter: boolean }) => !isBatter;
+
+// "No outs" meaning that nobody is thrown out on the bases.
+function forceRunnersNoOutsThunk(bases: number, staticLabel?: string) {
+  return function forceRunnersNoOuts(runners: number[], batterIndex: number): PlayFragment[] {
+    const result = [];
+    const label = staticLabel || `#${batterIndex}`;
+
+    let basesLeft = bases;
+    for (let base = 0; base < 3 && basesLeft > 0; ++base) {
+      const runnerIndex = runners[base];
+      if (runnerIndex !== undefined) {
+        result.push({ runnerIndex, label, bases: basesLeft });
+      }
+      else {
+        --basesLeft;
+      }
+    }
+
+    return result;
+  }
+}
+
+function fieldersChoice(runners: number[], batterIndex: number): PlayFragment[] {
+  const result = [];
+  const definedRunners = runners.filter(r => r !== undefined);
+  if (definedRunners.length == 1) {
+    const [ runnerIndex ] = definedRunners;
+    const label = `#${batterIndex}`;
+    result.push({ runnerIndex, label, bases: 0 });
+  }
+
+  return result;
+}
+
+function doublePlay(runners: number[], batterIndex: number): PlayFragment[] {
+  const result = [];
+  const [ first, second, third ] = runners;
+  if (first !== undefined && second == undefined && third == undefined) {
+    const runnerIndex = first;
+    const label = `#${batterIndex}`;
+    result.push({ runnerIndex, label, bases: 0 });
+  }
+
+  return result;
+}
 
 export const OutcomeTypes: PlayOption[] = [
   {
@@ -24,6 +69,7 @@ export const OutcomeTypes: PlayOption[] = [
     bases: 1,
     hit: true,
     available: isBatter,
+    handleRunners: forceRunnersNoOutsThunk(1),
   },
   {
     name: "Double",
@@ -31,6 +77,7 @@ export const OutcomeTypes: PlayOption[] = [
     bases: 2,
     hit: true,
     available: isBatter,
+    handleRunners: forceRunnersNoOutsThunk(2),
   },
   {
     name: "Triple",
@@ -38,6 +85,7 @@ export const OutcomeTypes: PlayOption[] = [
     bases: 3,
     hit: true,
     available: isBatter,
+    handleRunners: forceRunnersNoOutsThunk(3),
   },
   {
     name: "Home Run",
@@ -45,6 +93,7 @@ export const OutcomeTypes: PlayOption[] = [
     bases: 4,
     hit: true,
     available: isBatter,
+    handleRunners: forceRunnersNoOutsThunk(4),
   },
   {
     name: "Walk",
@@ -54,12 +103,14 @@ export const OutcomeTypes: PlayOption[] = [
     // This _can_ happen when someone is on base, but only if the runner is
     // forced and the batter draws a walk.
     available: isBatter,
+    handleRunners: forceRunnersNoOutsThunk(1, 'BB'),
   },
   {
     name: "Hit by pitch",
     resultText: () => `HBP`,
     bases: 1,
     available: isBatter,
+    handleRunners: forceRunnersNoOutsThunk(1),
   },
   {
     name: "Strikeout swinging",
@@ -82,6 +133,7 @@ export const OutcomeTypes: PlayOption[] = [
     bases: 1,
     outs: 1,
     available: [isBatter, anyRunners],
+    handleRunners: fieldersChoice,
   },
   {
     name: "Sacrifice Bunt",
@@ -90,6 +142,7 @@ export const OutcomeTypes: PlayOption[] = [
     bases: 0,
     outs: 1,
     available: [isBatter, anyRunners],
+    handleRunners: forceRunnersNoOutsThunk(1),
   },
   {
     name: "Sacrifice fly",
@@ -97,7 +150,11 @@ export const OutcomeTypes: PlayOption[] = [
     resultText: fielder => `SF ${fielder}`,
     bases: 0,
     outs: 1,
-    available: [isBatter, runners => runners[2] !== undefined],
+    available: [
+      isBatter,
+      ({ runners }) => runners[2] !== undefined,
+      ({ outs }) => outs < 2,
+    ],
   },
   {
     name: "Groundout",
@@ -106,6 +163,7 @@ export const OutcomeTypes: PlayOption[] = [
     bases: 0,
     outs: 1,
     available: isBatter,
+    handleRunners: forceRunnersNoOutsThunk(1),
   },
   {
     name: "Flyout",
@@ -129,7 +187,12 @@ export const OutcomeTypes: PlayOption[] = [
     resultText: fielders => `${assistHelper(fielders)} DP`,
     bases: 0,
     outs: 2,
-    available: [isBatter, runners => runners[0] !== undefined],
+    available: [
+      isBatter,
+      ({ runners }) => runners[0] !== undefined,
+      ({ outs }) => outs < 2,
+    ],
+    handleRunners: doublePlay,
   },
   {
     name: "Caught Stealing",
