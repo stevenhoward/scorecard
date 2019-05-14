@@ -72,28 +72,10 @@ class PlaySelector extends Component<PlaySelectorProps, PlaySelectorState> {
     this.onCompletedOutcome(option, fielder);
   }
 
-  render() {
-    if (this.state.pendingFielder !== undefined) {
-      const {fielderInputs} = this.state.pendingFielder;
-
-      return <SelectFielder
-        onFielderSelected={this.onFielder.bind(this)}
-        allowMultiple={fielderInputs == 'many'} />;
-    }
-
-    let advanceOutcomes: any[] = this.props.succeedingBatters.map(batterIndex => {
-      const outcome: PlayOption = {
-        name: `Advanced by batter ${batterIndex}`,
-        resultText: () => `#${batterIndex}`,
-        bases: 1,
-      };
-
-      return <li key={outcome.name} onClick={() => this.onCompletedOutcome(outcome)}>{outcome.name}</li>
-    });
-
+  private getAvailableOutcomes() {
     const { runners, outsInInning, onBase } = this.props;
 
-    const otherOutcomes = OutcomeTypes.
+    return OutcomeTypes.
       filter(outcome => {
         if (outcome.available !== undefined) {
           const filters = ([] as AvailabilityFilter[]).concat(outcome.available);
@@ -108,8 +90,39 @@ class PlaySelector extends Component<PlaySelectorProps, PlaySelectorState> {
 
         return true;
       });
+  }
 
-    const [ nonOuts, outs ] = [...advanceOutcomes, ...otherOutcomes].reduce(
+  private getSucceedingBatterOutcomes(): PlayOption[] {
+    return this.props.succeedingBatters.flatMap(batterIndex => {
+      return [
+        {
+          name: `Advanced by batter ${batterIndex}`,
+          resultText: () => `#${batterIndex}`,
+          bases: 1,
+        },
+        {
+          name: `Out on batter ${batterIndex}`,
+          resultText: () => `#${batterIndex}`,
+          bases: 0,
+        }
+      ];
+    });
+  }
+
+  render() {
+    if (this.state.pendingFielder !== undefined) {
+      const {fielderInputs} = this.state.pendingFielder;
+
+      return <SelectFielder
+        onFielderSelected={this.onFielder.bind(this)}
+        allowMultiple={fielderInputs == 'many'} />;
+    }
+
+    const succeedingBatterOutcomes = this.getSucceedingBatterOutcomes();
+    const otherOutcomes = this.getAvailableOutcomes();
+
+    // Group options together under 'non-outs' and 'outs'
+    const [ nonOuts, outs ] = [...succeedingBatterOutcomes, ...otherOutcomes].reduce(
       (rv, outcome) => {
         const madeOut = outcome.bases === 0 ? 1 : 0;
         rv[madeOut] = [...rv[madeOut], outcome];

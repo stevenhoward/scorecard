@@ -24,6 +24,11 @@ function computeRbis(state: Play[], fragments: PlayFragment[]) {
   const runners = getBaseRunnersImpl(state);
   let rbis = 0;
 
+  if (fragments.filter(f => f.bases === 0).length > 1) {
+    // special case: no RBI for a double play
+    return 0;
+  }
+
   if (fragments[0].bases === 4) {
     // A home run is the only case where a batter bats himself in
     ++rbis;
@@ -57,7 +62,7 @@ function* addPlay(state: Play[], outcome: PlayOutcome): IterableIterator<Play> {
     yield* state.slice(0, -1);
 
     const lastPlay = state[state.length - 1];
-    const fragments = [...lastPlay.fragments, fragment];
+    const fragments = [...lastPlay.fragments, fragment].sort((a, b) => a.runnerIndex - b.runnerIndex);
     const rbis = computeRbis(state, fragments);
 
     yield {

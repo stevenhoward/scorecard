@@ -57,7 +57,8 @@ export interface PlayOption extends PlayOutcomeBase {
   resultText: (fielders: string) => string;
 }
 
-// Represents the outcome of a selected option, including any selected fielders
+// Represents an out or advance for a particular runner from his current
+// location
 export interface PlayOutcome extends PlayOutcomeBase {
   // Label displayed in the diagram along this particular base path
   // Derived from resultText on PlayOption
@@ -81,11 +82,12 @@ export interface PlayFragment {
 
 // Represents what happens when the batter gets on base or makes an out.
 export interface Play {
-  // Index of this batter
+  // Index of this batter. runnerIndex is in reference to this index.
   index: number;
 
   // How many RBIs did the batter get?
   // TODO: this is derived, and should not be part of the source of truth
+  // (or is it? Note GiDP exception)
   rbis: number;
 
   // Did the batter get a hit?
