@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import {connect} from 'react-redux';
 import PlateAppearance from './PlateAppearance';
 import {AppState, Play, PlayFragment} from './redux/types';
-import {getCurrentInning} from './redux/selectors';
+import {getCurrentInningPlays} from './redux/selectors';
 
 interface InningProps {
   plays: Play[]
@@ -88,7 +88,7 @@ class Inning extends Component<InningProps, {}> {
 
 function mapStateToProps(state: AppState) {
   return {
-    plays: getCurrentInning(state),
+    plays: getCurrentInningPlays(state),
   };
 }
 

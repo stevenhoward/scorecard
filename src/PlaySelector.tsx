@@ -1,9 +1,9 @@
 import React, { Component, ReactNode } from 'react';
 import { connect } from 'react-redux';
 
-import { AppState, PlayOption, PlayOutcome, PlayFragment } from './redux/types';
+import { AppState, AvailabilityFilter, PlayOption, PlayOutcome, PlayFragment } from './redux/types';
 import { OutcomeTypes } from './outcomeTypes';
-import { runnersSelector } from './redux/selectors';
+import { getOutsInInning, runnersSelector } from './redux/selectors';
 
 import SelectFielder from './SelectFielder';
 import Dialog from './Dialog';
@@ -25,6 +25,9 @@ interface StateProps {
 
   // List of batters who put a ball in play and could advance a runner
   succeedingBatters: number[];
+
+  // Number of outs in the inning
+  outsInInning: number;
 }
 
 interface DispatchProps {
@@ -88,21 +91,28 @@ class PlaySelector extends Component<PlaySelectorProps, PlaySelectorState> {
       return <li key={outcome.name} onClick={() => this.onCompletedOutcome(outcome)}>{outcome.name}</li>
     });
 
-    // this name is terrible. Outcomes not related to an advancing runner
-    const possibleOutcomes = OutcomeTypes.filter(outcome =>
-      outcome.onBase === undefined || outcome.onBase === this.props.onBase);
+    const { runners, outsInInning, onBase } = this.props;
 
-    const otherOutcomes = possibleOutcomes.map(outcome => {
-      const { available, name } = outcome;
+    const otherOutcomes = OutcomeTypes.
+      filter(outcome => {
+        if (outcome.available !== undefined) {
+          const filters = ([] as AvailabilityFilter[]).concat(outcome.available);
+          for (const filter of filters) {
+            // TODO: consistency
+            const isBatter = !onBase;
+            if (!filter(runners, outsInInning, isBatter)) {
+              return false;
+            }
+          }
+        }
 
-      // e.g., can't have a fielder's choice without a runner, can't have a sac
-      // fly with nobody at third
-      if (available !== undefined && !available(this.props.runners)) {
-        return null;
-      }
+        return true;
+      }).
+      map(outcome => {
+        const { name } = outcome;
 
-      return <li key={name} onClick={() => this.outcomeSelected(outcome)}>{name}</li>
-    });
+        return <li key={name} onClick={() => this.outcomeSelected(outcome)}>{name}</li>
+      });
 
     return <ul className="play-types">{[...advanceOutcomes, ...otherOutcomes]}</ul>;
   }
@@ -113,6 +123,7 @@ function mapStateToProps(state: AppState, ownProps: OwnProps): StateProps {
 
   return {
     runners: runnersSelector(state),
+    outsInInning: getOutsInInning(state),
     succeedingBatters: state.plays.filter(p => p.index > index).map(p => p.index),
   };
 }

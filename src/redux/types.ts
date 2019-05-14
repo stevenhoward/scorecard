@@ -10,14 +10,22 @@ interface PlayOutcomeBase {
   hit?: boolean;
 }
 
+export interface AvailabilityFilter {
+  (runners: number[], outs: number, isBatter: boolean): boolean;
+}
+
 // Represents an option that the user might be able to select for a play
 export interface PlayOption extends PlayOutcomeBase {
   // Label in the interface
   name: string;
 
   // Given the runners on base, can this play type happen?
-  // Default is always available
-  available?: (runners: number[]) => boolean;
+  // Default (undefined) is always available
+  //
+  // runners: 3-tuple. TODO: use real tuple; account for undefined
+  // outs: how many outs are there?
+  // isBatter: is this the player currently up at bat?
+  available?: AvailabilityFilter | AvailabilityFilter[];
 
   // true: can only happen to a runner
   // false: can only happen to a batter

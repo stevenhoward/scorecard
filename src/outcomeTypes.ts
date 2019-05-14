@@ -9,8 +9,13 @@ function assistHelper(fielders: string) {
   }
 }
 
+// convenient filters for plays
 const anyRunners = (runners: number[]) =>
   runners.find(b => b !== undefined) != undefined;
+
+const isBatter = (runners: number[], outs: number, isBatter: boolean) => isBatter;
+
+const isNotBatter = (runners: number[], outs: number, isBatter: boolean) => !isBatter;
 
 export const OutcomeTypes: PlayOption[] = [
   {
@@ -18,46 +23,57 @@ export const OutcomeTypes: PlayOption[] = [
     resultText: () => `1B`,
     bases: 1,
     hit: true,
+    available: isBatter,
   },
   {
     name: "Double",
     resultText: () => `2B`,
     bases: 2,
     hit: true,
+    available: isBatter,
   },
   {
     name: "Triple",
     resultText: () => `3B`,
     bases: 3,
     hit: true,
+    available: isBatter,
   },
   {
     name: "Home Run",
     resultText: () => `HR`,
     bases: 4,
     hit: true,
+    available: isBatter,
   },
   {
-    name: "Base on balls",
+    name: "Walk",
     resultText: () => `BB`,
     bases: 1,
+
+    // This _can_ happen when someone is on base, but only if the runner is
+    // forced and the batter draws a walk.
+    available: isBatter,
   },
   {
     name: "Hit by pitch",
     resultText: () => `HBP`,
     bases: 1,
+    available: isBatter,
   },
   {
     name: "Strikeout swinging",
     resultText: () => 'K',
     bases: 0,
     outs: 1,
+    available: isBatter,
   },
   {
     name: "Strikeout looking",
     resultText: () => unescape('%uA4D8'),
     bases: 0,
     outs: 1,
+    available: isBatter,
   },
   {
     name: "Fielder's Choice",
@@ -65,7 +81,7 @@ export const OutcomeTypes: PlayOption[] = [
     resultText: fielders => `FC\n${assistHelper(fielders)}`,
     bases: 1,
     outs: 1,
-    available: anyRunners,
+    available: [isBatter, anyRunners],
   },
   {
     name: "Sacrifice Bunt",
@@ -73,7 +89,7 @@ export const OutcomeTypes: PlayOption[] = [
     resultText: fielders => `SAC ${assistHelper(fielders)}`,
     bases: 0,
     outs: 1,
-    available: anyRunners,
+    available: [isBatter, anyRunners],
   },
   {
     name: "Sacrifice fly",
@@ -81,7 +97,7 @@ export const OutcomeTypes: PlayOption[] = [
     resultText: fielder => `SF ${fielder}`,
     bases: 0,
     outs: 1,
-    available: runners => runners[2] !== undefined,
+    available: [isBatter, runners => runners[2] !== undefined],
   },
   {
     name: "Groundout",
@@ -89,6 +105,7 @@ export const OutcomeTypes: PlayOption[] = [
     resultText: fielders => assistHelper(fielders),
     bases: 0,
     outs: 1,
+    available: isBatter,
   },
   {
     name: "Flyout",
@@ -96,6 +113,7 @@ export const OutcomeTypes: PlayOption[] = [
     resultText: fielder => `${fielder}`,
     bases: 0,
     outs: 1,
+    available: isBatter,
   },
   {
     name: "Lineout",
@@ -103,6 +121,7 @@ export const OutcomeTypes: PlayOption[] = [
     resultText: fielder => `L${fielder}`,
     bases: 0,
     outs: 1,
+    available: isBatter,
   },
   {
     name: "Grounded into double play",
@@ -110,7 +129,7 @@ export const OutcomeTypes: PlayOption[] = [
     resultText: fielders => `${assistHelper(fielders)} DP`,
     bases: 0,
     outs: 2,
-    available: runners => runners[0] !== undefined,
+    available: [isBatter, runners => runners[0] !== undefined],
   },
   {
     name: "Caught Stealing",
@@ -118,6 +137,7 @@ export const OutcomeTypes: PlayOption[] = [
     resultText: () => `CS`,
     bases: 0,
     outs: 1,
+    available: isNotBatter,
   },
   {
     name: "Pick off",
@@ -125,24 +145,28 @@ export const OutcomeTypes: PlayOption[] = [
     resultText: () => `PO`,
     bases: 0,
     outs: 1,
+    available: isNotBatter,
   },
   {
     name: "Stolen Base",
     resultText: () => `SB`,
     bases: 1,
     onBase: true,
+    available: isNotBatter,
   },
   {
     name: "Wild Pitch",
     resultText: () => `WP`,
     bases: 1,
     onBase: true,
+    available: isNotBatter,
   },
   {
     name: "Passed Ball",
     resultText: () => `PB`,
     bases: 1,
     onBase: true,
+    available: isNotBatter,
   },
 ];
 
