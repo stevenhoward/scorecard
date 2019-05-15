@@ -1,13 +1,10 @@
-Currently all PlayFragments are grouped under their corresponding Play objects,
-but for stolen bases, caught stealing, and what have you, they need to be stored
-independently of the plate appearance data. Otherwise we wind up with an edge
-case where stealing home credits the batter with an RBI, e.g.
+Current structure is that fragments are stored directly as children on a play.
+What if we stored fragments as a flat, ordered list, and the plays were just
+references to particular indices?
 
-Should account for the number of outs in the play selector. Can't have a
-sacrifice with 2 outs, e.g.
+This would allow for free-floating plays like a stolen base or wild pitch, which
+aren't associated with a particular at-bat.
 
-There are some cases where we can do the "smart" thing and don't yet, like for a
-fielder's choice play with only one runner on, or a sacrifice fly (which by
-definition scores a runner from third).
+Would also potentially make it easier to clean up the tests, which I've been
+neglecting.
 
-Should add statistics at the bottom of each inning.

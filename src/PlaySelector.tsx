@@ -104,6 +104,7 @@ class PlaySelector extends Component<PlaySelectorProps, PlaySelectorState> {
           name: `Out on batter ${batterIndex}`,
           resultText: () => `#${batterIndex}`,
           bases: 0,
+          outs: 1,
         }
       ];
     });

@@ -7,10 +7,6 @@
   flex-flow: row;
 }
 
-.lineup {
-  margin-right: 10px;
-}
-
 .lineup header {
   height: var(--top-row-height);
   padding: 0 18px;
@@ -25,9 +21,15 @@
   float: right;
 }
 
+.lineup .slot > * {
+  margin: 5px;
+}
+
 .lineup .slot, .base-path-diagram {
   height: 100px;
-  margin-bottom: 2px;
+  margin-bottom: 0;
+  border: 1px dotted #aaa;
+  border-collapse: collapse;
 }
 
 .lineup .slotNumber {
@@ -47,10 +49,6 @@
 .inning-column, .lineup {
   display: flex;
   flex-flow: column;
-}
-
-.inning-column > * {
-  margin-bottom: 2px;
 }
 
 .static svg {
