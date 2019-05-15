@@ -41,9 +41,31 @@ export function getBaseRunnersImpl(state: Play[]) : [ number, number, number ] {
     }, Array(3)) as [number, number, number];
 }
 
-export const getCurrentInningPlays = createSelector(
+function* getPlaysByInningImpl(plays: Play[]) {
+  let outs = 0, startIndex = 0, i = 0;
+
+  for (; i < plays.length; ++i) {
+    const play = plays[i];
+    outs += play.fragments.filter(f => f.bases === 0).length;
+
+    if (outs === 3) {
+      yield plays.slice(startIndex, i + 1);
+      outs = 0;
+      startIndex = i + 1;
+    }
+  }
+
+  yield plays.slice(startIndex);
+}
+
+export const getPlaysByInning = createSelector(
   (state: AppState) => state.plays,
-  (plays: Play[]) => plays,
+  (plays: Play[]) => [...getPlaysByInningImpl(plays)],
+);
+
+export const getCurrentInningPlays = createSelector(
+  getPlaysByInning,
+  (plays: Play[][]) => plays[plays.length - 1],
 );
 
 export const getBaseRunners = createSelector(

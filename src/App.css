@@ -8,8 +8,21 @@
 }
 
 .lineup {
-  padding-top: var(--top-row-height);
   margin-right: 10px;
+}
+
+.lineup header {
+  height: var(--top-row-height);
+  padding: 0 18px;
+}
+
+.lineup header .player-name {
+  font-weight: bold;
+  float: left;
+}
+
+.lineup header .jersey-number {
+  float: right;
 }
 
 .lineup .slot {

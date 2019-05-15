@@ -6,7 +6,7 @@ export interface OwnProps {
 interface StateProps {
 }
 
-type LineupProps = OwnProps | StateProps;
+type LineupProps = OwnProps & StateProps;
 
 export default class Lineup extends Component<LineupProps, {}> {
   render() {
@@ -14,7 +14,7 @@ export default class Lineup extends Component<LineupProps, {}> {
       return (
         <div className="slot" key={i}>
           <span className="slotNumber">{i + 1}. </span>
-          <input type="text" className="player-name" placeholder="Player name" />
+          <input type="text" className="player-name" />
           <input type="text" className="jersey-number" pattern="\d{1,2}" />
         </div>
       );
@@ -22,6 +22,10 @@ export default class Lineup extends Component<LineupProps, {}> {
 
     return (
       <div className="lineup">
+        <header>
+          <span className="player-name">Player</span>
+          <span className="jersey-number">#</span>
+        </header>
         {slots}
       </div>
     );

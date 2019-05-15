@@ -124,7 +124,7 @@ class PlaySelector extends Component<PlaySelectorProps, PlaySelectorState> {
     // Group options together under 'non-outs' and 'outs'
     const [ nonOuts, outs ] = [...succeedingBatterOutcomes, ...otherOutcomes].reduce(
       (rv, outcome) => {
-        const madeOut = outcome.bases === 0 ? 1 : 0;
+        const madeOut = outcome.outs !== undefined ? 1 : 0;
         rv[madeOut] = [...rv[madeOut], outcome];
         return rv;
       },
