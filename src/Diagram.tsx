@@ -24,7 +24,7 @@ interface DiagramProps {
   rbis: number;
 }
 
-function* statusFromReached(reached: (boolean | undefined)[]) {
+function* statusFromReached(reached: (boolean | undefined)[], enabled: boolean) {
   let reachedPrevious = true;
   for (let i = 0; i < 4; ++i) {
     const r = reached[i];
@@ -35,7 +35,7 @@ function* statusFromReached(reached: (boolean | undefined)[]) {
       yield 'out';
       reachedPrevious = false;
     }
-    else if (reachedPrevious) {
+    else if (reachedPrevious && enabled) {
       yield 'interactive';
       reachedPrevious = false;
     }
@@ -44,26 +44,31 @@ function* statusFromReached(reached: (boolean | undefined)[]) {
       reachedPrevious = false;
     }
   }
+
+  // Solely to placate the type checker
+  if (false) {
+    yield 'did-not-reach';
+  }
 }
 
 export default function Diagram(props: DiagramProps) {
+  const { reached, outDescription, outNumber, rbis, enabled } = props;
+
   let outNumberFragment: ReactNode = null;
-  if (props.outNumber) {
+  if (outNumber) {
     outNumberFragment = (
       <React.Fragment>
-        <text className="out-indicator-text" x={5} y={95}>{props.outNumber}</text>
+        <text className="out-indicator-text" x={5} y={95}>{outNumber}</text>
         <circle cx={5} cy={90} r="8" stroke="black" fill="none" />
       </React.Fragment>
     );
   }
 
-  const status = props.enabled ?
-    Array.from(statusFromReached(props.reached)) :
-    Array(4).fill('initial');
+  const status = Array.from(statusFromReached(reached, enabled));
 
   let outDescriptionFragment: ReactNode = null;
-  if (props.outDescription) {
-    const description = ([] as string[]).concat(props.outDescription);
+  if (outDescription) {
+    const description = ([] as string[]).concat(outDescription);
     // Vertically center the multiline text
     const offset = description.length * 15 / 2;
     outDescriptionFragment = (
@@ -83,7 +88,7 @@ export default function Diagram(props: DiagramProps) {
     { cx: 96, cy: 96, r: 3, stroke: 'black', fill: 'none', key: 3 },
   ];
 
-  const rbisFragment = rbiCircles.slice(0, props.rbis)
+  const rbisFragment = rbiCircles.slice(0, rbis)
     .map(circleProps => <circle {...circleProps} />);
 
   // Generates a function that calls props.onBaseClicked(base) if the previous

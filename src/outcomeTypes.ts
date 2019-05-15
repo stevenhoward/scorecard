@@ -113,6 +113,16 @@ export const OutcomeTypes: PlayOption[] = [
     handleRunners: forceRunnersNoOutsThunk(1),
   },
   {
+    name: "Strikeout (wild pitch)",
+    resultText: () => `K, WP`,
+    bases: 1,
+    available: [
+      isBatter,
+      ({ runners, outs }) => runners[0] === undefined || outs === 2,
+    ],
+    handleRunners: forceRunnersNoOutsThunk(1),
+  },
+  {
     name: "Strikeout swinging",
     resultText: () => 'K',
     bases: 0,

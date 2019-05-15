@@ -8,9 +8,7 @@ interface Rect {
 }
 
 // Calculate where the labels go with respect to each base path
-function getLabelPosition(props: Rect) {
-  const x1 = props.x1, y1 = props.y1, x2 = props.x2, y2 = props.y2;
-
+function getLabelPosition({ x1, x2, y1, y2 }: Rect) {
   // Midpoint is at <ax, ay>
   const ax = (x1 + x2) / 2, ay = (y1 + y2) / 2;
 
@@ -31,7 +29,7 @@ export interface BasePathProps extends Rect {
 }
 
 export default function BasePath(props: BasePathProps) {
-  const x1 = props.x1, y1 = props.y1, x2 = props.x2, y2 = props.y2;
+  const { x1, y1, x2, y2 } = props;
   const width = Math.abs(x1 - x2);
   const height = Math.abs(y1 - y2);
   const xmin = Math.min(x1, x2);
