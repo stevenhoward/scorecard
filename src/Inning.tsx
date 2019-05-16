@@ -5,12 +5,17 @@ import {AppState, Play, PlayFragment} from './redux/types';
 import { getPlaysByInning, getCurrentInningPlays, getCurrentInningFragments } from './redux/selectors';
 
 export interface OwnProps {
+  // Zero-based index of this inning.
   inningNumber: number;
 }
 
 interface StateProps {
   enabled: boolean;
+
+  // 0 for the top of the first.
+  // -Infinity for an inning that hasn't started yet.
   startIndex: number;
+
   plays: Play[]
   fragments: PlayFragment[];
 }
@@ -66,15 +71,21 @@ class Inning extends Component<InningProps, {}> {
     // 9 cells with data = new column for 10th.
     const cells = Math.ceil((plays.length + 1) / 9) * 9;
 
-    const plateAppearances = Array(cells).fill(null).map((_, i) =>
-      <PlateAppearance
-        outs={outs.get(i + startIndex)}
-        fragments={fragments.filter(f => f.runnerIndex == i + startIndex)}
+    // startIndex is -Infinity if this is a future inning and it's just here for
+    // show. This is a horrible
+
+    const plateAppearances = Array(cells).fill(null).map((_, i) => {
+      const batterIndex = i + startIndex;
+
+      return (<PlateAppearance
+        outs={outs.get(batterIndex)}
+        fragments={fragments.filter(f => f.runnerIndex == batterIndex)}
         rbis={plays[i] ? plays[i].rbis : 0}
-        key={i + startIndex}
-        index={i + startIndex}
+        key={i}
+        index={batterIndex}
         enabled={i <= maxIndex && this.props.enabled}
       />);
+    });
 
     const columns = [];
     for (let i = 0; i < plateAppearances.length; i += 9) {
@@ -100,20 +111,21 @@ function mapStateToProps(state: AppState, ownProps: OwnProps) {
   const playsByInning = getPlaysByInning(state);
   const { inningNumber } = ownProps;
 
-  const startIndex = (
-    inningNumber == 0
-    ? 0
-    : playsByInning[inningNumber - 1].slice(-1)[0].index + 1
-  );
+  let startIndex = -Infinity;
+  let plays: Play[] = [];
 
-  const plays = playsByInning[inningNumber];
+  if (playsByInning.length > inningNumber) {
+    startIndex = inningNumber == 0
+      ? 0
+      : playsByInning[inningNumber - 1].slice(-1)[0].index + 1;
 
-  return {
-    plays,
-    startIndex,
-    enabled: playsByInning.length == inningNumber + 1,
-    fragments: plays.flatMap(play => play.fragments),
-  };
+    plays = playsByInning[inningNumber];
+  }
+
+  const enabled = playsByInning.length == inningNumber + 1;
+  const fragments = plays.flatMap(play => play.fragments);
+
+  return { plays, startIndex, enabled, fragments };
 }
 
 export default connect(mapStateToProps)(Inning);

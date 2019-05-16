@@ -16,11 +16,12 @@ type GameProps = OwnProps & StateProps;
 class Game extends Component<StateProps, {}> {
   render() {
     const { innings } = this.props;
+    const numInnings = Math.max(innings.length, 9);
 
     return (
       <div className="game">
         <Lineup />
-        { this.props.innings.map((_, i) => <Inning inningNumber={i} key={i} />) }
+        { Array(numInnings).fill(null).map((_, i) => <Inning inningNumber={i} key={i} />) }
       </div>
     );
   }

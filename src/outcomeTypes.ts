@@ -1,4 +1,4 @@
-import { PlayFragment, PlayOption } from './redux/types';
+import { AvailabilityFilterArgs, PlayFragment, PlayOption } from './redux/types';
 
 function assistHelper(fielders: string) {
   if (fielders.length == 1) {
@@ -10,12 +10,12 @@ function assistHelper(fielders: string) {
 }
 
 // convenient filters for plays
-const anyRunners = ({ runners } : { runners: number[] }) =>
+const anyRunners = ({ runners } : AvailabilityFilterArgs) =>
   runners.find(b => b !== undefined) != undefined;
 
-const isBatter = ({ isBatter }: { isBatter: boolean }) => isBatter;
+const isBatter = ({ isBatter }: AvailabilityFilterArgs) => isBatter;
 
-const isNotBatter = ({ isBatter }: { isBatter: boolean }) => !isBatter;
+const isNotBatter = ({ isBatter }: AvailabilityFilterArgs) => !isBatter;
 
 // "No outs" meaning that nobody is thrown out on the bases.
 function forceRunnersNoOutsThunk(bases: number, staticLabel?: string) {
@@ -113,6 +113,24 @@ export const OutcomeTypes: PlayOption[] = [
     handleRunners: forceRunnersNoOutsThunk(1),
   },
   {
+    // TODO: FC + error
+    name: "Error",
+    fielderInputs: 'one',
+    resultText: fielder => `E${fielder}`,
+    bases: 1,
+    handleRunners: forceRunnersNoOutsThunk(1),
+  },
+  {
+    name: "Strikeout (Passed ball)",
+    resultText: () => `K, WP`,
+    bases: 1,
+    available: [
+      isBatter,
+      ({ runners, outs }) => runners[0] === undefined || outs === 2,
+    ],
+    handleRunners: forceRunnersNoOutsThunk(1),
+  },
+  {
     name: "Strikeout (wild pitch)",
     resultText: () => `K, WP`,
     bases: 1,
@@ -137,6 +155,7 @@ export const OutcomeTypes: PlayOption[] = [
     available: isBatter,
   },
   {
+    // TODO: Advanced "on the throw," i.e. FC on a hit
     name: "Fielder's Choice",
     fielderInputs: 'many',
     resultText: fielders => `FC\n${assistHelper(fielders)}`,
@@ -192,6 +211,14 @@ export const OutcomeTypes: PlayOption[] = [
     available: isBatter,
   },
   {
+    name: "Popout",
+    fielderInputs: 'one',
+    resultText: fielder => `P${fielder}`,
+    bases: 0,
+    outs: 1,
+    available: isBatter,
+  },
+  {
     name: "Grounded into double play",
     fielderInputs: 'many',
     resultText: fielders => `${assistHelper(fielders)} DP`,
@@ -226,6 +253,13 @@ export const OutcomeTypes: PlayOption[] = [
     bases: 1,
     onBase: true,
     available: isNotBatter,
+  },
+  {
+    name: "Runner's interference",
+    resultText: fielder => `${fielder}`,
+    bases: 0,
+    outs: 1,
+    fielderInputs: 'one',
   },
   {
     name: "Wild Pitch",
