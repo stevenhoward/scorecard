@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import {connect} from 'react-redux';
 import PlateAppearance from './PlateAppearance';
 import {AppState, Play, PlayFragment} from './redux/types';
-import { getPlaysByInning, getCurrentInningPlays, getCurrentInningFragments } from './redux/selectors';
+import { getInningMeta, getPlaysByInning, getCurrentInningPlays, getCurrentInningFragments } from './redux/selectors';
 
 export interface OwnProps {
   // Zero-based index of this inning.
@@ -54,7 +54,6 @@ class Inning extends Component<InningProps, {}> {
 
   render() {
     const { inningNumber, fragments, plays, startIndex } = this.props;
-    console.log({ inningNumber, plays, startIndex });
 
     const outs = fragments
       .filter(f => f.bases === 0)
@@ -71,15 +70,14 @@ class Inning extends Component<InningProps, {}> {
     // 9 cells with data = new column for 10th.
     const cells = Math.ceil((plays.length + 1) / 9) * 9;
 
-    // startIndex is -Infinity if this is a future inning and it's just here for
-    // show. This is a horrible
-
     const plateAppearances = Array(cells).fill(null).map((_, i) => {
-      const batterIndex = i + startIndex;
+      let batterIndex = -Infinity;
+      if (i < plays.length || i == plays.length && this.props.enabled) {
+        batterIndex = i + startIndex;
+      }
 
       return (<PlateAppearance
         outs={outs.get(batterIndex)}
-        fragments={fragments.filter(f => f.runnerIndex == batterIndex)}
         rbis={plays[i] ? plays[i].rbis : 0}
         key={i}
         index={batterIndex}
@@ -108,6 +106,7 @@ class Inning extends Component<InningProps, {}> {
 }
 
 function mapStateToProps(state: AppState, ownProps: OwnProps) {
+  const inningMeta = getInningMeta(state);
   const playsByInning = getPlaysByInning(state);
   const { inningNumber } = ownProps;
 
@@ -123,7 +122,8 @@ function mapStateToProps(state: AppState, ownProps: OwnProps) {
   }
 
   const enabled = playsByInning.length == inningNumber + 1;
-  const fragments = plays.flatMap(play => play.fragments);
+
+  const { fragments } = state;
 
   return { plays, startIndex, enabled, fragments };
 }

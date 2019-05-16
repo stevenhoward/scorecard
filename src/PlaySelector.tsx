@@ -21,7 +21,7 @@ export interface OwnProps {
 
 interface StateProps {
   // 3-tuple indicating the numbers of players on base
-  runners: number[];
+  runners: [ number, number, number ];
 
   // List of batters who put a ball in play and could advance a runner
   succeedingBatters: number[];

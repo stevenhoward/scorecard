@@ -1,3 +1,17 @@
+/***
+ * Overview of types:
+ *
+ * Each team's data is completely independent of the other team.  Each plate
+ * appearance is stored within one Play structure, with a 0-based index
+ * corresponding to the batting order (a perfect game would have indexes from 0
+ * to 26). This is used to identify both the batting statistics associated with
+ * the plate appearance and the group of movements (PlayFragment) on the
+ * basepaths that happened at that time.
+ **/
+
+/***
+ * Input types
+ **/
 interface PlayOutcomeBase {
   // How many bases this player advanced
   bases: number;
@@ -16,7 +30,7 @@ interface PlayOutcomeBase {
 }
 
 export interface AvailabilityFilterArgs {
-  runners: number[];
+  runners: [ number, number, number ];
   outs: number;
   isBatter: boolean;
 }
@@ -67,6 +81,10 @@ export interface PlayOutcome extends PlayOutcomeBase {
   runnerIndex: number;
 }
 
+/***
+ * Store types
+ **/
+
 // Represents something happening on the bases. Several of these can happen in a
 // play.
 export interface PlayFragment {
@@ -93,13 +111,15 @@ export interface Play {
   // Did the batter get a hit?
   hit: boolean;
 
-  // Which runners moved on the play?
-  fragments: PlayFragment[];
+  // Indexes refer to AppState.fragments
+  fragmentIndexes: number[];
 }
 
 // Root object for the store
 export interface AppState {
   plays: Play[];
+
+  fragments: PlayFragment[];
 }
 
 /* Action types */

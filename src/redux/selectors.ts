@@ -15,10 +15,8 @@ function groupBy<T>(xs: T[], keyFunc: (t: T) => number | string): T[][] {
 
 // Returns an array with the total number of bases for each player who's not
 // out.
-function getTotalBases(state: Play[]) : {index: number, bases: number}[] {
-  const flatState = state.flatMap((play, index) => play.fragments);
-
-  return groupBy(flatState, x => x.runnerIndex).
+function getTotalBases(fragmentsThisInning: PlayFragment[]) : {index: number, bases: number}[] {
+  return groupBy(fragmentsThisInning, x => x.runnerIndex).
     // ensure batter is not out
     filter(group => group.findIndex(x => x.bases == 0) == -1).
     // add up total bases
@@ -33,34 +31,79 @@ function getTotalBases(state: Play[]) : {index: number, bases: number}[] {
 // Returns a 3-tuple with the index of the players at [first, second, third]
 // base.
 // FIXME: exposing this directly because it's used in the reducer code
-export function getBaseRunnersImpl(state: Play[]) : [ number, number, number ] {
-  return getTotalBases(state).filter(ib => ib.bases < 4).
+export function getBaseRunnersImpl(fragmentsThisInning: PlayFragment[]) : [ number, number, number ] {
+  return getTotalBases(fragmentsThisInning).filter(ib => ib.bases < 4).
     reduce((acc, cv) => {
       acc[cv.bases - 1] = cv.index;
       return acc;
     }, Array(3)) as [number, number, number];
 }
 
-function* getPlaysByInningImpl(plays: Play[]) {
-  let outs = 0, startIndex = 0, i = 0;
+interface InningMeta {
+  firstFragment: number;
+  lastFragment: number;
+  firstPlay: number;
+  lastPlay: number;
+}
 
-  for (; i < plays.length; ++i) {
-    const play = plays[i];
-    outs += play.fragments.filter(f => f.bases === 0).length;
+function getInningMetaImpl(plays: Play[], fragments: PlayFragment[]) : InningMeta[] {
+  const innings: InningMeta[] = [];
 
-    if (outs === 3) {
-      yield plays.slice(startIndex, i + 1);
-      outs = 0;
-      startIndex = i + 1;
+  let playIndex = 0, fragmentIndex = 0;
+  let outs = 0;
+
+  for (let inningNumber = 0; fragmentIndex < fragments.length; ++inningNumber) {
+    const firstFragment = fragmentIndex, firstPlay = playIndex;
+
+    for (outs = 0; outs < 3 && fragmentIndex < fragments.length; ++fragmentIndex) {
+      if (fragments[fragmentIndex].bases === 0) {
+        ++outs;
+      }
     }
+
+    const lastFragment = fragmentIndex;
+    playIndex = Math.max(
+      ...fragments.slice(firstFragment, lastFragment).map(f => f.runnerIndex)
+    ) + 1;
+
+    innings.push({ firstFragment, lastFragment, firstPlay, lastPlay: playIndex });
   }
 
-  yield plays.slice(startIndex);
+  // If there are no outs,
+  if (outs === 3 || !innings.length) {
+    innings.push({
+      firstFragment: fragmentIndex,
+      lastFragment: fragmentIndex,
+      firstPlay: playIndex,
+      lastPlay: playIndex,
+    });
+  }
+  console.log({ inningMeta: innings });
+
+  return innings;
+}
+
+export const getInningMeta = createSelector(
+  (state: AppState) => state.plays,
+  (state: AppState) => state.fragments,
+  getInningMetaImpl,
+);
+
+function getPlaysByInningImpl(inningMeta: InningMeta[], plays: Play[], fragments: PlayFragment[]) : Play[][] {
+  const innings: Play[][] = [];
+
+  for (const { firstPlay, lastPlay } of inningMeta) {
+    innings.push(plays.slice(firstPlay, lastPlay));
+  }
+
+  return innings;
 }
 
 export const getPlaysByInning = createSelector(
+  getInningMeta,
   (state: AppState) => state.plays,
-  (plays: Play[]) => [...getPlaysByInningImpl(plays)],
+  (state: AppState) => state.fragments,
+  getPlaysByInningImpl,
 );
 
 export const getCurrentInningPlays = createSelector(
@@ -68,15 +111,20 @@ export const getCurrentInningPlays = createSelector(
   (plays: Play[][]) => plays[plays.length - 1],
 );
 
-export const getBaseRunners = createSelector(
-  getCurrentInningPlays,
-  (plays: Play[]) => getBaseRunnersImpl(plays),
+function getCurrentInningFragmentsImpl(innings: InningMeta[], fragments: PlayFragment[]) {
+  const { firstFragment, lastFragment } = innings[innings.length - 1];
+  return fragments.slice(firstFragment, lastFragment + 1);
+}
+
+export const getCurrentInningFragments = createSelector(
+  getInningMeta,
+  (state: AppState) => state.fragments,
+  getCurrentInningFragmentsImpl,
 );
 
-// Get a flat list of runners reaching, getting out, etc
-export const getCurrentInningFragments = createSelector(
-  getCurrentInningPlays,
-  (plays: Play[]) => plays.flatMap(p => p.fragments),
+export const getBaseRunners = createSelector(
+  getCurrentInningFragments,
+  (fragments: PlayFragment[]) => getBaseRunnersImpl(fragments),
 );
 
 function getOutsInInningImpl(fragments: PlayFragment[]) {
@@ -86,4 +134,18 @@ function getOutsInInningImpl(fragments: PlayFragment[]) {
 export const getOutsInInning = createSelector(
   getCurrentInningFragments,
   getOutsInInningImpl,
+);
+
+function getFragmentsByRunnerIndexImpl(fragments: PlayFragment[]) {
+  return fragments.reduce(
+    (rv, f) => {
+      rv.set(f.runnerIndex, [...(rv.get(f.runnerIndex) || []), f]);
+      return rv;
+    },
+    new Map<number, PlayFragment[]>());
+}
+
+export const getFragmentsByRunnerIndex = createSelector(
+  (state: AppState) => state.fragments,
+  getFragmentsByRunnerIndexImpl,
 );

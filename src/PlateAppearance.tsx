@@ -1,8 +1,9 @@
 import React, { Component, CSSProperties, ReactNode } from 'react';
 import { connect } from 'react-redux';
 
-import { Play, PlayFragment } from './redux/types';
+import { AppState, Play, PlayFragment } from './redux/types';
 import { addPlay, clearFrom } from './redux/actions';
+import { getFragmentsByRunnerIndex } from './redux/selectors';
 
 import SelectFielder from './SelectFielder';
 import Dialog from './Dialog';
@@ -17,13 +18,15 @@ export interface OwnProps {
   // If this runner recorded an out, which one was it?
   outs: number | undefined;
 
-  // The play fragments describing just this player's motion on the base paths
-  fragments: PlayFragment[];
-
   rbis: number;
 
   // Batter index, zero-based from the top of the first.
   index: number;
+}
+
+interface StateProps {
+  // The play fragments describing just this player's motion on the base paths
+  fragments: PlayFragment[];
 }
 
 interface DispatchProps {
@@ -34,7 +37,7 @@ interface DispatchProps {
   clearFrom: typeof clearFrom;
 }
 
-type PlateAppearanceProps = OwnProps & DispatchProps;
+type PlateAppearanceProps = OwnProps & StateProps & DispatchProps;
 
 interface PlateAppearanceState {
   dialogVisible: boolean;
@@ -58,6 +61,7 @@ class PlateAppearance extends Component<PlateAppearanceProps, PlateAppearanceSta
     };
   }
 
+  // TODO: move logic into mapStateToProps
   static getDerivedStateFromProps(props: PlateAppearanceProps, state: PlateAppearanceState) {
     // props gives us play-by-play data in the format most useful for the game
     // as a whole, i.e. in chronologically-ordered chunks.
@@ -142,5 +146,11 @@ class PlateAppearance extends Component<PlateAppearanceProps, PlateAppearanceSta
   }
 }
 
-export default connect<{}, DispatchProps, OwnProps>(undefined, {addPlay, clearFrom})
-  (PlateAppearance);
+function mapStateToProps(state: AppState, ownProps: OwnProps) : StateProps {
+  const fragmentsByRunnerIndex = getFragmentsByRunnerIndex(state);
+  const fragments = fragmentsByRunnerIndex.get(ownProps.index) || [];
+
+  return { fragments };
+}
+
+export default connect(mapStateToProps, {addPlay, clearFrom})(PlateAppearance);

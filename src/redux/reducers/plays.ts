@@ -7,6 +7,7 @@ function* clearFragmentsFrom(state: Play[], index: number, base: number) {
   let baseIndex = 0;
 
   for (const play of state) {
+    /*
     for (const { runnerIndex, bases } of play.fragments) {
       if (runnerIndex == index) {
         baseIndex += bases;
@@ -15,13 +16,14 @@ function* clearFragmentsFrom(state: Play[], index: number, base: number) {
         }
       }
     }
+     */
 
     yield play;
   }
 }
 
 function computeRbis(state: Play[], fragments: PlayFragment[]) {
-  const runners = getBaseRunnersImpl(state);
+  const runners = getBaseRunnersImpl(fragments);
   let rbis = 0;
 
   if (fragments.filter(f => f.bases === 0).length > 1) {
@@ -46,59 +48,78 @@ function computeRbis(state: Play[], fragments: PlayFragment[]) {
   return rbis;
 }
 
-function* addPlay(state: Play[], outcome: PlayOutcome): IterableIterator<Play> {
+function addBatterPlay(state: AppState, outcome: PlayOutcome, fragment: PlayFragment) {
+  let plays = [...state.plays], fragments = [...state.fragments];
+
+  const { handleRunners, hit, label, runnerIndex } = outcome;
+  const advancedRunnerLabel = label == 'BB' ? 'BB' : `#${runnerIndex}`;
+
+  let newFragments = [ fragment ];
+
+  if (handleRunners !== undefined) {
+    const runners = getBaseRunnersImpl(fragments);
+    newFragments = [...newFragments, ...handleRunners(runners, runnerIndex)];
+  }
+
+  fragments = [...fragments, ...newFragments];
+  const rbis = computeRbis(plays, fragments);
+
+  const fragmentIndexes = fragments.map((_, i) => i).slice(-newFragments.length);
+
+  plays.push({ index: runnerIndex, fragmentIndexes, rbis, hit: !!hit, });
+
+  return { plays, fragments };
+}
+
+function addRunnerPlay(state: AppState, outcome: PlayOutcome, fragment: PlayFragment) : AppState {
+  let plays = [...state.plays], fragments = [...state.fragments];
+
+  // If the runner is not the current batter, amend the previous at bat
+  const newFragmentIndex = fragments.length;
+  fragments.push(fragment);
+
+  const lastPlay = plays[plays.length - 1];
+  const fragmentIndexes = [...lastPlay.fragmentIndexes, newFragmentIndex].sort();
+  const rbis = computeRbis(plays, fragments);
+
+  const play = { ...lastPlay, fragmentIndexes, rbis };
+
+  plays = [...plays.slice(0, -1), play];
+
+  return { plays, fragments };
+}
+
+function addPlay(state: AppState, outcome: PlayOutcome) : AppState {
+  const { plays, fragments } = state;
   const { runnerIndex, bases, label, hit } = outcome;
 
-  const fragment = { runnerIndex, bases, label, };
+  const fragment = { runnerIndex, bases, label };
 
   // Index of the last batter to record a play. The _current_ batter will be one
   // greater
-  const maxIndex = Math.max(...state.map(play => play.index));
+  const maxIndex = Math.max(...plays.map(play => play.index));
 
-  const isBatter = maxIndex < 0 || runnerIndex > maxIndex;
-
+  const isBatter = maxIndex < 0 || runnerIndex == maxIndex + 1;
   if (!isBatter) {
-    // If the runner is not the current batter, amend the previous at bat
-    yield* state.slice(0, -1);
-
-    const lastPlay = state[state.length - 1];
-    const fragments = [...lastPlay.fragments, fragment].sort((a, b) => a.runnerIndex - b.runnerIndex);
-    const rbis = computeRbis(state, fragments);
-
-    yield {
-      ...lastPlay,
-      fragments,
-      rbis,
-    };
+    return addRunnerPlay(state, outcome, fragment);
   }
   else {
-    yield* state;
-
-    const advancedRunnerLabel = label == 'BB' ? 'BB' : `#${runnerIndex}`;
-
-    let forcedRunners: PlayFragment[] = [];
-    if (outcome.handleRunners !== undefined) {
-      const runners = getBaseRunnersImpl(state);
-      forcedRunners = outcome.handleRunners(runners, runnerIndex);
-    }
-
-    const fragments = [ fragment, ...forcedRunners ].sort((a, b) => a.runnerIndex - b.runnerIndex);
-
-    const rbis = computeRbis(state, fragments);
-
-    yield { index: runnerIndex, fragments, rbis, hit: !!hit, };
+    return addBatterPlay(state, outcome, fragment);
   }
 }
 
-const initialState: Play[] = [];
+const initialState: AppState = {
+  plays: [],
+  fragments: [],
+};
 
-export function playReducer(state = initialState, action: ActionTypes): Play[] {
+export function playReducer(state = initialState, action: ActionTypes): AppState {
   switch(action.type) {
     case ADD_PLAY:
-      return Array.from(addPlay(state, action.payload));
+      return addPlay(state, action.payload);
 
-    case CLEAR_FROM:
-      return Array.from(clearFragmentsFrom(state, action.index, action.base));
+      //case CLEAR_FROM:
+      //return clearFragmentsFrom(state.plays, action.index, action.base);
 
     default:
       return state;
