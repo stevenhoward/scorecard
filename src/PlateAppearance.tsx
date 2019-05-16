@@ -3,13 +3,13 @@ import { connect } from 'react-redux';
 
 import { AppState, Play, PlayFragment } from './redux/types';
 import { addPlay, clearFrom } from './redux/actions';
-import { getFragmentsByRunnerIndex } from './redux/selectors';
+import { getFragmentIndexesByBatter } from './redux/selectors';
 
 import SelectFielder from './SelectFielder';
 import Dialog from './Dialog';
 import BasePath from './BasePath';
 import PlaySelector from './PlaySelector';
-import Diagram from './Diagram';
+import Diagram, { DiagramLeg } from './Diagram';
 
 export interface OwnProps {
   // Can the user interact with this plate appearance?
@@ -25,8 +25,11 @@ export interface OwnProps {
 }
 
 interface StateProps {
-  // The play fragments describing just this player's motion on the base paths
+  // All fragments in the game
   fragments: PlayFragment[];
+
+  // The play fragments describing just this player's motion on the base paths
+  fragmentIndexes: number[];
 }
 
 interface DispatchProps {
@@ -34,7 +37,7 @@ interface DispatchProps {
   addPlay: (fragment: PlayFragment) => void;
 
   // User clicks a base in the diagram,
-  clearFrom: typeof clearFrom;
+  clearFrom: (fragmentIndex: number) => void;
 }
 
 type PlateAppearanceProps = OwnProps & StateProps & DispatchProps;
@@ -47,17 +50,17 @@ interface PlateAppearanceState {
 
   outDescription?: string[];
 
-  reached: (boolean | undefined)[];
-  results: (string | undefined)[];
+  legs: DiagramLeg[];
 }
 
 class PlateAppearance extends Component<PlateAppearanceProps, PlateAppearanceState> {
+  state: PlateAppearanceState;
+
   constructor(props: PlateAppearanceProps) {
     super(props);
     this.state = {
       dialogVisible: false,
-      reached: ([] as boolean[]),
-      results: ([] as string[]),
+      legs: [],
     };
   }
 
@@ -67,36 +70,36 @@ class PlateAppearance extends Component<PlateAppearanceProps, PlateAppearanceSta
     // as a whole, i.e. in chronologically-ordered chunks.
     // state needs that data only in terms of which bases a player reached and
     // how.
-    const { fragments } = props;
+    const { fragmentIndexes, fragments: allFragments } = props;
 
     let outDescription: (string | undefined);
     let outNumber: (number | undefined);
-    const reached = [];
-    const results = [];
+    const legs: DiagramLeg[] = [];
 
-    if (fragments.length == 1 && fragments[0].bases === 0) {
+    const [ firstIndex ] = fragmentIndexes
+    if (fragmentIndexes.length == 1 && allFragments[firstIndex].bases === 0) {
       // simple out, did not reach base.
-      outDescription = fragments[0].label;
+      outDescription = allFragments[firstIndex].label;
       outNumber = props.outs;
     }
     else {
-      for (const f of fragments) {
-        if (f.bases == 0) {
+      for (const fragmentIndex of fragmentIndexes) {
+        const f = allFragments[fragmentIndex];
+        let { bases, label } = f;
+        if (bases == 0) {
           outNumber = props.outs;
         }
 
-        reached.push(f.bases > 0);
-        results.push(f.label);
+        legs.push({ reached: bases > 0, label, fragmentIndex });
 
         // Additional bases get a line but not a label
         for (let i = 1; i < f.bases; ++i) {
-          reached.push(true);
-          results.push('');
+          legs.push({ reached: bases > 0, label: '', fragmentIndex });
         }
       }
     }
 
-    return { reached, results, outDescription, outNumber, };
+    return { legs, outDescription, outNumber, };
   }
 
   closeDialog() {
@@ -104,8 +107,11 @@ class PlateAppearance extends Component<PlateAppearanceProps, PlateAppearanceSta
   }
 
   private handleBaseClicked(base: number) {
-    if (this.state.reached.length > base || base == 0 && this.state.outNumber) {
-      this.props.clearFrom(this.props.index, base);
+    const { legs } = this.state;
+
+    if (this.state.legs.length > base || base == 0 && this.state.outNumber) {
+      const { fragmentIndex } = legs[base];
+      this.props.clearFrom(fragmentIndex);
     }
     else {
       const addPlay = (outcome: PlayFragment) => {
@@ -131,8 +137,7 @@ class PlateAppearance extends Component<PlateAppearanceProps, PlateAppearanceSta
         <Diagram
           outNumber={this.state.outNumber}
           outDescription={this.state.outDescription}
-          reached={this.state.reached}
-          results={this.state.results}
+          legs={this.state.legs}
           onBaseClicked={this.handleBaseClicked.bind(this)}
           enabled={this.props.enabled}
           rbis={this.props.rbis}
@@ -147,10 +152,10 @@ class PlateAppearance extends Component<PlateAppearanceProps, PlateAppearanceSta
 }
 
 function mapStateToProps(state: AppState, ownProps: OwnProps) : StateProps {
-  const fragmentsByRunnerIndex = getFragmentsByRunnerIndex(state);
-  const fragments = fragmentsByRunnerIndex.get(ownProps.index) || [];
+  const fragmentIndexes = getFragmentIndexesByBatter(state).get(ownProps.index) || [];
+  const { fragments } = state;
 
-  return { fragments };
+  return { fragmentIndexes, fragments };
 }
 
 export default connect(mapStateToProps, {addPlay, clearFrom})(PlateAppearance);

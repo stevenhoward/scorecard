@@ -1,6 +1,16 @@
 import React, { Component, CSSProperties, ReactNode } from 'react';
 import BasePath, {BasePathProps} from './BasePath';
 
+// There are only two hard problems in computer science: Caching and naming
+// things.
+export interface DiagramLeg {
+  label: string;
+
+  reached: boolean;
+
+  fragmentIndex: number;
+}
+
 interface DiagramProps {
   // Is interaction enabled?
   enabled: boolean;
@@ -14,24 +24,21 @@ interface DiagramProps {
   outDescription?: string | string[];
 
   // label for each base line
-  results: (string | undefined)[];
-
-  // did the runner reach each base?
-  reached: (boolean | undefined)[];
+  legs: DiagramLeg[];
 
   onBaseClicked: (base: number) => void;
 
   rbis: number;
 }
 
-function* statusFromReached(reached: (boolean | undefined)[], enabled: boolean) {
+function* statusFromReached(legs: DiagramLeg[], enabled: boolean) {
   let reachedPrevious = true;
   for (let i = 0; i < 4; ++i) {
-    const r = reached[i];
-    if (r === true) {
+    const reached = legs[i] ? legs[i].reached : undefined;
+    if (reached === true) {
       yield 'safe';
     }
-    else if (r === false) {
+    else if (reached === false) {
       yield 'out';
       reachedPrevious = false;
     }
@@ -52,7 +59,7 @@ function* statusFromReached(reached: (boolean | undefined)[], enabled: boolean) 
 }
 
 export default function Diagram(props: DiagramProps) {
-  const { reached, outDescription, outNumber, rbis, enabled } = props;
+  const { legs, outDescription, outNumber, rbis, enabled } = props;
 
   let outNumberFragment: ReactNode = null;
   if (outNumber) {
@@ -64,7 +71,7 @@ export default function Diagram(props: DiagramProps) {
     );
   }
 
-  const status = Array.from(statusFromReached(reached, enabled));
+  const status = Array.from(statusFromReached(legs, enabled));
 
   let outDescriptionFragment: ReactNode = null;
   if (outDescription) {
@@ -107,22 +114,22 @@ export default function Diagram(props: DiagramProps) {
       <BasePath
         x1={50} y1={100} x2={100} y2={50}
         status={status[0]}
-        result={props.results[0]}
+        result={legs[0] && legs[0].label}
         handleClick={genOnBaseClicked(0)} />
       <BasePath
         x1={100} y1={50} x2={50} y2={0}
         status={status[1]}
-        result={props.results[1]}
+        result={legs[1] && legs[1].label}
         handleClick={genOnBaseClicked(1)} />
       <BasePath
         x1={50} y1={0} x2={0} y2={50}
         status={status[2]}
-        result={props.results[2]}
+        result={legs[2] && legs[2].label}
         handleClick={genOnBaseClicked(2)} />
       <BasePath
         x1={0} y1={50} x2={50} y2={100}
         status={status[3]}
-        result={props.results[3]}
+        result={legs[3] && legs[3].label}
         handleClick={genOnBaseClicked(3)} />
 
       {outNumberFragment}

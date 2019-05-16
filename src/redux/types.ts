@@ -131,15 +131,7 @@ export interface AddPlayAction {
 
 export interface ClearFromAction {
   type: 'CLEAR_FROM';
-  index: number;
-  base: number;
+  fragmentIndex: number;
 }
 
-export interface AdvanceRunnerAction {
-  type: 'ADVANCE_RUNNER';
-  runnerIndex: number;
-  batterIndex: number;
-  bases: number;
-}
-
-export type ActionTypes = AddPlayAction | AdvanceRunnerAction | ClearFromAction;
+export type ActionTypes = AddPlayAction | ClearFromAction;

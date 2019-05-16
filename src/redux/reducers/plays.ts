@@ -3,23 +3,30 @@ import {Play, PlayOutcome, PlayFragment, ActionTypes, AppState} from '../types';
 
 import { getBaseRunnersImpl } from '../selectors';
 
-function* clearFragmentsFrom(state: Play[], index: number, base: number) {
+// Given a fragment index, removes everything that happened "after" this point.
+function clearFragmentsFrom(state: AppState, fragmentIndex: number): AppState {
   let baseIndex = 0;
 
-  for (const play of state) {
-    /*
-    for (const { runnerIndex, bases } of play.fragments) {
-      if (runnerIndex == index) {
-        baseIndex += bases;
-        if (baseIndex >= base) {
-          return;
-        }
-      }
-    }
-     */
-
-    yield play;
+  // We want to delete in chronological order, but if this is a runner that
+  // might have been forced, we could wind up with the game in an invalid state
+  // (e.g. "2 runners on first"). So make sure we rewind further.
+  let revisedIndex = fragmentIndex;
+  const [ attachedPlay ] = state.plays.filter(p => p.fragmentIndexes.includes(fragmentIndex));
+  if (attachedPlay) {
+    revisedIndex = Math.min(...attachedPlay.fragmentIndexes);
   }
+
+  const fragments = state.fragments.slice(0, revisedIndex);
+  const plays = state.plays.map(play => ({
+    ...play,
+    fragmentIndexes: play.fragmentIndexes.filter(i => i < fragments.length),
+  })).filter(play => play.fragmentIndexes.length > 0);
+
+  return {
+    ...state,
+    plays,
+    fragments
+  };
 }
 
 function computeRbis(state: Play[], fragments: PlayFragment[]) {
@@ -59,6 +66,8 @@ function addBatterPlay(state: AppState, outcome: PlayOutcome, fragment: PlayFrag
   if (handleRunners !== undefined) {
     const runners = getBaseRunnersImpl(fragments);
     newFragments = [...newFragments, ...handleRunners(runners, runnerIndex)];
+
+    newFragments.sort((a, b) => b.runnerIndex - a.runnerIndex);
   }
 
   fragments = [...fragments, ...newFragments];
@@ -118,8 +127,8 @@ export function playReducer(state = initialState, action: ActionTypes): AppState
     case ADD_PLAY:
       return addPlay(state, action.payload);
 
-      //case CLEAR_FROM:
-      //return clearFragmentsFrom(state.plays, action.index, action.base);
+    case CLEAR_FROM:
+      return clearFragmentsFrom(state, action.fragmentIndex);
 
     default:
       return state;

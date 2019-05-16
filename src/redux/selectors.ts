@@ -78,7 +78,6 @@ function getInningMetaImpl(plays: Play[], fragments: PlayFragment[]) : InningMet
       lastPlay: playIndex,
     });
   }
-  console.log({ inningMeta: innings });
 
   return innings;
 }
@@ -136,16 +135,17 @@ export const getOutsInInning = createSelector(
   getOutsInInningImpl,
 );
 
-function getFragmentsByRunnerIndexImpl(fragments: PlayFragment[]) {
-  return fragments.reduce(
-    (rv, f) => {
-      rv.set(f.runnerIndex, [...(rv.get(f.runnerIndex) || []), f]);
+function getFragmentIndexesByBatterImpl(fragments: PlayFragment[]) {
+  return fragments.map((fragment, index) => ({fragment, index})).reduce(
+    (rv, { fragment, index }) => {
+      rv.set(fragment.runnerIndex, [...(rv.get(fragment.runnerIndex) || []), index]);
       return rv;
     },
-    new Map<number, PlayFragment[]>());
+    new Map<number, number[]>()
+  );
 }
 
-export const getFragmentsByRunnerIndex = createSelector(
+export const getFragmentIndexesByBatter = createSelector(
   (state: AppState) => state.fragments,
-  getFragmentsByRunnerIndexImpl,
+  getFragmentIndexesByBatterImpl,
 );
