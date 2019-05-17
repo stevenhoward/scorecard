@@ -1,7 +1,7 @@
 import {ADD_PLAY, CLEAR_FROM} from '../actionTypes';
 import {Play, PlayOutcome, PlayFragment, ActionTypes, AppState} from '../types';
 
-import { getBaseRunnersImpl } from '../selectors';
+import { getBaseRunners, getTotalBasesByInning } from '../selectors';
 
 // Given a fragment index, removes everything that happened "after" this point.
 function clearFragmentsFrom(state: AppState, fragmentIndex: number): AppState {
@@ -29,26 +29,23 @@ function clearFragmentsFrom(state: AppState, fragmentIndex: number): AppState {
   };
 }
 
-function computeRbis(state: Play[], fragments: PlayFragment[]) {
-  const runners = getBaseRunnersImpl(fragments);
+function computeRbis(state: AppState, newFragments: PlayFragment[]) {
+  const basesByInning = getTotalBasesByInning(state);
+  const basesThisInning = basesByInning[basesByInning.length - 1];
+
+  const runners = getBaseRunners(state);
   let rbis = 0;
 
-  if (fragments.filter(f => f.bases === 0).length > 1) {
+  if (newFragments.filter(f => f.bases === 0).length > 1) {
     // special case: no RBI for a double play
+    // TODO: errors, what have you
     return 0;
   }
 
-  if (fragments[0].bases === 4) {
-    // A home run is the only case where a batter bats himself in
-    ++rbis;
-  }
-
-  for (let i = 0; i < 3; ++i) {
-    if (runners[i] != undefined) {
-      const advance = fragments.find(f => f.runnerIndex === runners[i]);
-      if (advance && i + 1 + advance.bases >= 4) {
-        ++rbis;
-      }
+  for (const { runnerIndex, bases } of newFragments) {
+    const existingBases = basesThisInning.get(runnerIndex) || 0;
+    if (existingBases < 4 && existingBases + bases >= 4) {
+      ++rbis;
     }
   }
 
@@ -64,14 +61,16 @@ function addBatterPlay(state: AppState, outcome: PlayOutcome, fragment: PlayFrag
   let newFragments = [ fragment ];
 
   if (handleRunners !== undefined) {
-    const runners = getBaseRunnersImpl(fragments);
+    const runners = getBaseRunners(state);
     newFragments = [...newFragments, ...handleRunners(runners, runnerIndex)];
+    let { fragmentIndex } = fragment;
+    newFragments = newFragments.map(fragment => ({ ...fragment, fragmentIndex: fragmentIndex++ }));
 
     newFragments.sort((a, b) => b.runnerIndex - a.runnerIndex);
   }
 
   fragments = [...fragments, ...newFragments];
-  const rbis = computeRbis(plays, fragments);
+  const rbis = computeRbis(state, newFragments);
 
   const fragmentIndexes = fragments.map((_, i) => i).slice(-newFragments.length);
 
@@ -89,7 +88,7 @@ function addRunnerPlay(state: AppState, outcome: PlayOutcome, fragment: PlayFrag
 
   const lastPlay = plays[plays.length - 1];
   const fragmentIndexes = [...lastPlay.fragmentIndexes, newFragmentIndex].sort();
-  const rbis = computeRbis(plays, fragments);
+  const rbis = computeRbis(state, fragments);
 
   const play = { ...lastPlay, fragmentIndexes, rbis };
 
@@ -102,7 +101,7 @@ function addPlay(state: AppState, outcome: PlayOutcome) : AppState {
   const { plays, fragments } = state;
   const { runnerIndex, bases, label, hit } = outcome;
 
-  const fragment = { runnerIndex, bases, label };
+  const fragment = { runnerIndex, bases, label, fragmentIndex: fragments.length };
 
   // Index of the last batter to record a play. The _current_ batter will be one
   // greater

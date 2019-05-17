@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import {connect} from 'react-redux';
 import PlateAppearance from './PlateAppearance';
 import {AppState, Play, PlayFragment} from './redux/types';
-import { getInningMeta, getPlaysByInning, getCurrentInningPlays, getCurrentInningFragments } from './redux/selectors';
+import { getInningMeta, getPlaysByInning } from './redux/selectors';
 
 export interface OwnProps {
   // Zero-based index of this inning.
@@ -55,14 +55,6 @@ class Inning extends Component<InningProps, {}> {
   render() {
     const { inningNumber, fragments, plays, startIndex } = this.props;
 
-    const outs = fragments
-      .filter(f => f.bases === 0)
-      .map(f => f.runnerIndex)
-      .reduce((map, runnerIndex) => {
-        map.set(runnerIndex, map.size + 1);
-        return map;
-      }, new Map<number, number>());
-
     const maxIndex = plays.length
       ? Math.max(...plays.map(play => play.index)) + 1
       : 0;
@@ -77,11 +69,10 @@ class Inning extends Component<InningProps, {}> {
       }
 
       return (<PlateAppearance
-        outs={outs.get(batterIndex)}
         rbis={plays[i] ? plays[i].rbis : 0}
         key={i}
         index={batterIndex}
-        enabled={i <= maxIndex && this.props.enabled}
+        enabled={i <= maxIndex && this.props.enabled && batterIndex >= 0}
       />);
     });
 

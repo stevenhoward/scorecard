@@ -88,6 +88,11 @@ export interface PlayOutcome extends PlayOutcomeBase {
 // Represents something happening on the bases. Several of these can happen in a
 // play.
 export interface PlayFragment {
+  // These correspond directly to the master fragment list, i.e.
+  //  state.fragments[i].fragmentIndex === i
+  // but sometimes we want to slice the fragment list
+  fragmentIndex: number;
+
   runnerIndex: number;
 
   // 0 to indicate an out

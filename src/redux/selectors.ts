@@ -5,46 +5,19 @@ interface GroupDict<T> {
   [key: string]: T[];
 }
 
-function groupBy<T>(xs: T[], keyFunc: (t: T) => number | string): T[][] {
-  return Object.values(xs.reduce((rv: GroupDict<T>, x: T) => {
-    const key = keyFunc(x);
-    rv[key] = [...(rv[key] || []), x];
-    return rv;
-  }, {}));
-}
-
-// Returns an array with the total number of bases for each player who's not
-// out.
-function getTotalBases(fragmentsThisInning: PlayFragment[]) : {index: number, bases: number}[] {
-  return groupBy(fragmentsThisInning, x => x.runnerIndex).
-    // ensure batter is not out
-    filter(group => group.findIndex(x => x.bases == 0) == -1).
-    // add up total bases
-    map(group => {
-      return {
-        index: group[0].runnerIndex,
-        bases: group.reduce((a, c) => a += c.bases, 0)
-      };
-    });
-}
-
-// Returns a 3-tuple with the index of the players at [first, second, third]
-// base.
-// FIXME: exposing this directly because it's used in the reducer code
-export function getBaseRunnersImpl(fragmentsThisInning: PlayFragment[]) : [ number, number, number ] {
-  return getTotalBases(fragmentsThisInning).filter(ib => ib.bases < 4).
-    reduce((acc, cv) => {
-      acc[cv.bases - 1] = cv.index;
-      return acc;
-    }, Array(3)) as [number, number, number];
-}
-
 interface InningMeta {
   firstFragment: number;
   lastFragment: number;
   firstPlay: number;
   lastPlay: number;
 }
+
+interface CurrentInning {
+  inningFragments: PlayFragment[];
+  inningPlays: Play[];
+}
+
+type MaybeNumber = number | undefined;
 
 function getInningMetaImpl(plays: Play[], fragments: PlayFragment[]) : InningMeta[] {
   const innings: InningMeta[] = [];
@@ -82,70 +55,122 @@ function getInningMetaImpl(plays: Play[], fragments: PlayFragment[]) : InningMet
   return innings;
 }
 
-export const getInningMeta = createSelector(
-  (state: AppState) => state.plays,
-  (state: AppState) => state.fragments,
-  getInningMetaImpl,
-);
-
-function getPlaysByInningImpl(inningMeta: InningMeta[], plays: Play[], fragments: PlayFragment[]) : Play[][] {
-  const innings: Play[][] = [];
-
-  for (const { firstPlay, lastPlay } of inningMeta) {
-    innings.push(plays.slice(firstPlay, lastPlay));
-  }
-
-  return innings;
+function getPlaysByInningImpl(inningMeta: InningMeta[], plays: Play[]) {
+  return inningMeta.reduce(
+    (rv, { firstPlay, lastPlay }) =>
+      [...rv, plays.slice(firstPlay, lastPlay)],
+    [] as Play[][]);
 }
 
-export const getPlaysByInning = createSelector(
-  getInningMeta,
-  (state: AppState) => state.plays,
-  (state: AppState) => state.fragments,
-  getPlaysByInningImpl,
-);
+function getFragmentsByInningImpl(inningMeta: InningMeta[], fragments: PlayFragment[]) {
+  return inningMeta.reduce(
+    (rv, { firstFragment, lastFragment }) =>
+      [...rv, fragments.slice(firstFragment, lastFragment)] ,
+    [] as PlayFragment[][]);
+}
 
-export const getCurrentInningPlays = createSelector(
-  getPlaysByInning,
-  (plays: Play[][]) => plays[plays.length - 1],
-);
+function getTotalBasesByInningImpl(inningMeta: InningMeta[], fragments: PlayFragment[]) : Map<number, number>[] {
+  return inningMeta.map(({ firstFragment, lastFragment }) =>
+    (fragments
+      .slice(firstFragment, lastFragment)
+      .reduce(
+        (rv, fragment) => {
+          const { runnerIndex, bases } = fragment;
+          rv.set(runnerIndex, (rv.get(runnerIndex) || 0) + bases);
+          return rv;
+        },
+        new Map<number, number>())
+    ));
+}
+
+// Returns a 3-tuple with the index of the players at [first, second, third]
+// base.
+// FIXME: exposing this directly because it's used in the reducer code
+function getBaseRunnersImpl(totalBases: Map<number, number>[]) : [ number, number, number ] {
+  const runnersOn = ([...totalBases[totalBases.length - 1].entries()]
+    .map(([ runnerIndex, base ]) => ({ runnerIndex, base }))
+    .filter(({ base }) => base > 0 && base < 4)
+  );
+
+  return runnersOn.reduce(
+    (rv, x) => {
+      const { runnerIndex, base } = x;
+      rv[base - 1] = runnerIndex;
+      return rv;
+    },
+    new Array(3) as [ number, number, number ]);
+}
 
 function getCurrentInningFragmentsImpl(innings: InningMeta[], fragments: PlayFragment[]) {
   const { firstFragment, lastFragment } = innings[innings.length - 1];
   return fragments.slice(firstFragment, lastFragment + 1);
 }
 
-export const getCurrentInningFragments = createSelector(
-  getInningMeta,
-  (state: AppState) => state.fragments,
-  getCurrentInningFragmentsImpl,
-);
-
-export const getBaseRunners = createSelector(
-  getCurrentInningFragments,
-  (fragments: PlayFragment[]) => getBaseRunnersImpl(fragments),
-);
-
 function getOutsInInningImpl(fragments: PlayFragment[]) {
   return fragments.filter(f => f.bases === 0).length;
 }
 
-export const getOutsInInning = createSelector(
-  getCurrentInningFragments,
-  getOutsInInningImpl,
-);
-
-function getFragmentIndexesByBatterImpl(fragments: PlayFragment[]) {
-  return fragments.map((fragment, index) => ({fragment, index})).reduce(
-    (rv, { fragment, index }) => {
-      rv.set(fragment.runnerIndex, [...(rv.get(fragment.runnerIndex) || []), index]);
-      return rv;
-    },
-    new Map<number, number[]>()
+function getFragmentsByBatterImpl(fragments: PlayFragment[]) : Map<number, PlayFragment[]> {
+  return (fragments
+    .reduce(
+      (rv, fragment) => {
+        const { runnerIndex } = fragment;
+        rv.set(runnerIndex, [...(rv.get(runnerIndex) || []), fragment]);
+        return rv;
+      },
+      new Map<number, PlayFragment[]>())
   );
 }
 
-export const getFragmentIndexesByBatter = createSelector(
-  (state: AppState) => state.fragments,
-  getFragmentIndexesByBatterImpl,
-);
+function getCurrentInningImpl(inningMeta: InningMeta[], plays: Play[], fragments: PlayFragment[]) : CurrentInning {
+  const { firstPlay, lastPlay, firstFragment, lastFragment } = inningMeta[inningMeta.length - 1];
+
+  const inningPlays = plays.slice(firstPlay, lastPlay);
+  const inningFragments = fragments.slice(firstFragment, lastFragment);
+  return { inningPlays, inningFragments };
+}
+
+function getOutsByBatterImpl(fragments: PlayFragment[]) {
+  return (fragments
+    .filter(({ bases }) => bases === 0)
+    .reduce(
+      (rv, { runnerIndex }, i) => {
+        rv[runnerIndex] = i % 3 + 1;
+        return rv;
+      },
+      {} as any)
+  );
+}
+
+export const getPlays = (state: AppState) => state.plays;
+export const getFragments = (state: AppState) => state.fragments;
+
+export const getInningMeta =
+  createSelector(getPlays, getFragments, getInningMetaImpl);
+
+export const getCurrentInning =
+  createSelector(getInningMeta, getPlays, getFragments, getCurrentInningImpl);
+
+export const getPlaysByInning =
+  createSelector(getInningMeta, getPlays, getPlaysByInningImpl);
+
+export const getFragmentsByInning =
+  createSelector(getInningMeta, getFragments, getFragmentsByInningImpl);
+
+export const getCurrentInningFragments =
+  createSelector(getInningMeta, getFragments, getCurrentInningFragmentsImpl);
+
+export const getTotalBasesByInning =
+  createSelector(getInningMeta, getFragments, getTotalBasesByInningImpl);
+
+export const getBaseRunners =
+  createSelector(getTotalBasesByInning, getBaseRunnersImpl);
+
+export const getOutsInInning
+  = createSelector(getCurrentInningFragments, getOutsInInningImpl);
+
+export const getFragmentsByBatter
+  = createSelector(getFragments, getFragmentsByBatterImpl);
+
+export const getOutsByBatter
+  = createSelector(getFragments, getOutsByBatterImpl);

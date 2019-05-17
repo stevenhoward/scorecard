@@ -14,8 +14,10 @@ export default class Lineup extends Component<LineupProps, {}> {
       return (
         <div className="slot" key={i}>
           <span className="slotNumber">{i + 1}. </span>
-          <input type="text" className="player-name" />
-          <input type="text" className="jersey-number" pattern="\d{1,2}" />
+          <div className="player-line">
+            <input type="text" className="player-name" />
+            <input type="text" className="jersey-number" pattern="\d{1,2}" />
+          </div>
         </div>
       );
     });

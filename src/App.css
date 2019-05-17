@@ -7,6 +7,10 @@
   flex-flow: row;
 }
 
+.lineup {
+  text-align: left;
+}
+
 .lineup header {
   height: var(--top-row-height);
   padding: 0 18px;
@@ -34,6 +38,19 @@
 
 .lineup .slotNumber {
   color: #888;
+  float: left;
+}
+
+.lineup .player-line {
+  margin: 0;
+}
+
+.player-line .player-name {
+  width: 70%;
+}
+
+.player-line .jersey-number {
+  width: 10%;
 }
 
 .jersey-number {
