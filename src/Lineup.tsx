@@ -1,26 +1,38 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { addPlayer } from './redux/actions';
+import { AppState,Player } from './redux/types';
 
 export interface OwnProps {
 }
 
 interface StateProps {
+  players: Player[];
 }
 
 type LineupProps = OwnProps & StateProps;
 
-export default class Lineup extends Component<LineupProps, {}> {
+function Slot(props: Player) {
+  const { name, jerseyNumber } = props || { name: '', jerseyNumber: undefined };
+
+  return (
+    <div className="player-line">
+      <input type="text" className="player-name" value={name} />
+      <input type="text" className="jersey-number" value={jerseyNumber} />
+    </div>
+  );
+}
+
+class Lineup extends Component<LineupProps, {}> {
   render() {
-    const slots = Array(9).fill(null).map((_, i) => {
-      return (
-        <div className="slot" key={i}>
-          <span className="slotNumber">{i + 1}. </span>
-          <div className="player-line">
-            <input type="text" className="player-name" />
-            <input type="text" className="jersey-number" pattern="\d{1,2}" />
-          </div>
-        </div>
-      );
-    });
+    const { players } = this.props;
+
+    const slots = Array(9).fill(null).map((_, i) => (
+      <div className="slot" key={i}>
+        <span className="slotNumber">{i + 1}. </span>
+        <Slot {...players[i]} />
+      </div>
+    ));
 
     return (
       <div className="lineup">
@@ -33,3 +45,9 @@ export default class Lineup extends Component<LineupProps, {}> {
     );
   }
 }
+
+function mapStateToProps(state: AppState, ownProps: OwnProps): StateProps {
+  return { players: state.players };
+}
+
+export default connect(mapStateToProps, { addPlayer })(Lineup);

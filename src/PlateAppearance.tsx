@@ -1,7 +1,7 @@
 import React, { Component, CSSProperties, ReactNode } from 'react';
 import { connect } from 'react-redux';
 
-import { AppState, Play, PlayFragment } from './redux/types';
+import { AppState, Play, PlayFragment, PlayOutcome } from './redux/types';
 import { addPlay, clearFrom } from './redux/actions';
 import { getFragmentsByBatter, getOutsByBatter } from './redux/selectors';
 
@@ -105,8 +105,8 @@ class PlateAppearance extends Component<PlateAppearanceProps, PlateAppearanceSta
       this.props.clearFrom(this.props.fragments[0].fragmentIndex);
     }
     else {
-      const addPlay = (outcome: PlayFragment) => {
-        this.props.addPlay({ runnerIndex: this.props.index, ...outcome });
+      const addPlay = (outcome: PlayOutcome) => {
+        this.props.addPlay({ runnerIndex: this.props.index, ...outcome, fragmentIndex: -Infinity });
         this.closeDialog();
       };
 

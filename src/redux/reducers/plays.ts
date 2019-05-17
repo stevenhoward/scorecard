@@ -76,7 +76,7 @@ function addBatterPlay(state: AppState, outcome: PlayOutcome, fragment: PlayFrag
 
   plays.push({ index: runnerIndex, fragmentIndexes, rbis, hit: !!hit, });
 
-  return { plays, fragments };
+  return { ...state, plays, fragments };
 }
 
 function addRunnerPlay(state: AppState, outcome: PlayOutcome, fragment: PlayFragment) : AppState {
@@ -94,7 +94,7 @@ function addRunnerPlay(state: AppState, outcome: PlayOutcome, fragment: PlayFrag
 
   plays = [...plays.slice(0, -1), play];
 
-  return { plays, fragments };
+  return { ...state, plays, fragments };
 }
 
 function addPlay(state: AppState, outcome: PlayOutcome) : AppState {
@@ -119,6 +119,7 @@ function addPlay(state: AppState, outcome: PlayOutcome) : AppState {
 const initialState: AppState = {
   plays: [],
   fragments: [],
+  players: [],
 };
 
 export function playReducer(state = initialState, action: ActionTypes): AppState {

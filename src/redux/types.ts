@@ -120,11 +120,21 @@ export interface Play {
   fragmentIndexes: number[];
 }
 
+export interface Player {
+  name: string;
+  position: string;
+  jerseyNumber: number;
+  slot: number;
+  subbedOutIndex: number;
+}
+
 // Root object for the store
 export interface AppState {
   plays: Play[];
 
   fragments: PlayFragment[];
+
+  players: Player[];
 }
 
 /* Action types */
@@ -139,4 +149,9 @@ export interface ClearFromAction {
   fragmentIndex: number;
 }
 
-export type ActionTypes = AddPlayAction | ClearFromAction;
+export interface AddPlayerAction {
+  type: 'ADD_PLAYER';
+  player: Player;
+}
+
+export type ActionTypes = AddPlayAction | ClearFromAction | AddPlayerAction;

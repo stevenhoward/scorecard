@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import {connect} from 'react-redux';
 import PlateAppearance from './PlateAppearance';
 import {AppState, Play, PlayFragment} from './redux/types';
-import { getInningMeta, getPlaysByInning } from './redux/selectors';
+import { getInningMeta, getPlaysByInning, getTotalBasesByInning } from './redux/selectors';
 
 export interface OwnProps {
   // Zero-based index of this inning.
@@ -18,22 +18,16 @@ interface StateProps {
 
   plays: Play[]
   fragments: PlayFragment[];
+
+  runs: number;
 }
 
 type InningProps = OwnProps & StateProps
 
 class Inning extends Component<InningProps, {}> {
   private renderStatistics() {
-    const { plays, fragments } = this.props;
+    const { plays, fragments, runs } = this.props;
     const hits = plays.filter(play => play.hit).length;
-    const totalBases = fragments.reduce(
-      (rv, x) => {
-        rv.set(x.runnerIndex, (rv.get(x.runnerIndex) || 0) + x.bases);
-        return rv;
-      },
-      new Map<number, number>());
-
-    const runs = [...totalBases.values()].filter(bases => bases == 4).length;
 
     return (
       <table className="statistics">
@@ -97,12 +91,14 @@ class Inning extends Component<InningProps, {}> {
 }
 
 function mapStateToProps(state: AppState, ownProps: OwnProps) {
-  const inningMeta = getInningMeta(state);
-  const playsByInning = getPlaysByInning(state);
   const { inningNumber } = ownProps;
+
+  const playsByInning = getPlaysByInning(state);
+  const totalBasesByInning = getTotalBasesByInning(state);
 
   let startIndex = -Infinity;
   let plays: Play[] = [];
+  let runs = 0;
 
   if (playsByInning.length > inningNumber) {
     startIndex = inningNumber == 0
@@ -110,13 +106,14 @@ function mapStateToProps(state: AppState, ownProps: OwnProps) {
       : playsByInning[inningNumber - 1].slice(-1)[0].index + 1;
 
     plays = playsByInning[inningNumber];
+    runs = [...totalBasesByInning[inningNumber].values()].filter(bases => bases >= 4).length;
   }
 
   const enabled = playsByInning.length == inningNumber + 1;
 
   const { fragments } = state;
 
-  return { plays, startIndex, enabled, fragments };
+  return { plays, startIndex, enabled, fragments, runs };
 }
 
 export default connect(mapStateToProps)(Inning);

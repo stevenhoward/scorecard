@@ -16,7 +16,7 @@ export interface OwnProps {
   onBase: boolean;
 
   //
-  addPlay: (fragment: PlayFragment) => void;
+  addPlay: (outcome: PlayOutcome) => void;
 }
 
 interface StateProps {

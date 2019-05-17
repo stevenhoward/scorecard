@@ -27,7 +27,7 @@ function forceRunnersNoOutsThunk(bases: number, staticLabel?: string) {
     for (let base = 0; base < 3 && basesLeft > 0; ++base) {
       const runnerIndex = runners[base];
       if (runnerIndex !== undefined) {
-        result.push({ runnerIndex, label, bases: basesLeft });
+        result.push({ runnerIndex, label, bases: basesLeft, fragmentIndex: -Infinity });
       }
       else {
         --basesLeft;
@@ -44,7 +44,7 @@ function fieldersChoice(runners: number[], batterIndex: number): PlayFragment[] 
   if (definedRunners.length == 1) {
     const [ runnerIndex ] = definedRunners;
     const label = `#${batterIndex}`;
-    result.push({ runnerIndex, label, bases: 0 });
+    result.push({ runnerIndex, label, bases: 0, fragmentIndex: -Infinity });
   }
 
   return result;
@@ -56,7 +56,7 @@ function doublePlay(runners: number[], batterIndex: number): PlayFragment[] {
   if (first !== undefined && second == undefined && third == undefined) {
     const runnerIndex = first;
     const label = `#${batterIndex}`;
-    result.push({ runnerIndex, label, bases: 0 });
+    result.push({ runnerIndex, label, bases: 0, fragmentIndex: -Infinity });
   }
 
   return result;
