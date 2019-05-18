@@ -54,11 +54,6 @@ export interface PlayOption extends PlayOutcomeBase {
   // isBatter: is this the player currently up at bat?
   available?: AvailabilityFilter | AvailabilityFilter[];
 
-  // true: can only happen to a runner
-  // false: can only happen to a batter
-  // undefined: no restriction
-  onBase?: boolean;
-
   // Default: no fielders needed
   // 'one': e.g. 'L8'
   // 'many': '4-3' or '3U'

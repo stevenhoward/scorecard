@@ -233,7 +233,6 @@ export const OutcomeTypes: PlayOption[] = [
   },
   {
     name: "Caught Stealing",
-    onBase: true,
     resultText: () => `CS`,
     bases: 0,
     outs: 1,
@@ -241,8 +240,14 @@ export const OutcomeTypes: PlayOption[] = [
   },
   {
     name: "Pick off",
-    onBase: true,
     resultText: () => `PO`,
+    bases: 0,
+    outs: 1,
+    available: isNotBatter,
+  },
+  {
+    name: "Thrown out",
+    resultText: fielders => `${fielders}`,
     bases: 0,
     outs: 1,
     available: isNotBatter,
@@ -251,7 +256,6 @@ export const OutcomeTypes: PlayOption[] = [
     name: "Stolen Base",
     resultText: () => `SB`,
     bases: 1,
-    onBase: true,
     available: isNotBatter,
   },
   {
@@ -265,14 +269,12 @@ export const OutcomeTypes: PlayOption[] = [
     name: "Wild Pitch",
     resultText: () => `WP`,
     bases: 1,
-    onBase: true,
     available: isNotBatter,
   },
   {
     name: "Passed Ball",
     resultText: () => `PB`,
     bases: 1,
-    onBase: true,
     available: isNotBatter,
   },
 ];
