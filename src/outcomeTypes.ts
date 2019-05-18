@@ -23,11 +23,14 @@ function forceRunnersNoOutsThunk(bases: number, staticLabel?: string) {
     const result = [];
     const label = staticLabel || `#${batterIndex}`;
 
-    let basesLeft = bases;
+    // For the purpose of "forcing" runners, a triple is sufficient to clear the
+    // bases.
+    let basesLeft = Math.min(bases, 3);
     for (let base = 0; base < 3 && basesLeft > 0; ++base) {
       const runnerIndex = runners[base];
       if (runnerIndex !== undefined) {
-        result.push({ runnerIndex, label, bases: basesLeft, fragmentIndex: -Infinity });
+        const fragmentBases = Math.min(basesLeft, 3 - base);
+        result.push({ runnerIndex, label, bases: fragmentBases, fragmentIndex: -Infinity });
       }
       else {
         --basesLeft;
