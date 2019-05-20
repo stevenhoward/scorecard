@@ -4,6 +4,7 @@ import { AppState, Play } from './redux/types';
 import { getPlaysByInning } from './redux/selectors';
 import Inning from './Inning';
 import Lineup from './Lineup';
+import BatterStatistics from './BatterStatistics';
 
 export interface OwnProps {}
 
@@ -22,6 +23,7 @@ class Game extends Component<StateProps, {}> {
       <div className="game">
         <Lineup />
         { Array(numInnings).fill(null).map((_, i) => <Inning inningNumber={i} key={i} />) }
+        <BatterStatistics />
       </div>
     );
   }

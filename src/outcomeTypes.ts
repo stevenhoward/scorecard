@@ -106,6 +106,7 @@ export const OutcomeTypes: PlayOption[] = [
     // This _can_ happen when someone is on base, but only if the runner is
     // forced and the batter draws a walk.
     available: isBatter,
+    noAtBat: true,
     handleRunners: forceRunnersNoOutsThunk(1, 'BB'),
   },
   {
@@ -113,6 +114,7 @@ export const OutcomeTypes: PlayOption[] = [
     resultText: () => `HBP`,
     bases: 1,
     available: isBatter,
+    noAtBat: true,
     handleRunners: forceRunnersNoOutsThunk(1),
   },
   {
@@ -173,6 +175,7 @@ export const OutcomeTypes: PlayOption[] = [
     resultText: fielders => `SAC ${assistHelper(fielders)}`,
     bases: 0,
     outs: 1,
+    noAtBat: true,
     available: [isBatter, anyRunners],
     handleRunners: forceRunnersNoOutsThunk(1),
   },
@@ -182,6 +185,7 @@ export const OutcomeTypes: PlayOption[] = [
     resultText: fielder => `SF ${fielder}`,
     bases: 0,
     outs: 1,
+    noAtBat: true,
     available: [
       isBatter,
       ({ runners }) => runners[2] !== undefined,

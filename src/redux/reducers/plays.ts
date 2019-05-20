@@ -74,7 +74,7 @@ function addBatterPlay(state: AppState, outcome: PlayOutcome, fragment: PlayFrag
 
   const fragmentIndexes = fragments.map((_, i) => i).slice(-newFragments.length);
 
-  plays.push({ index: runnerIndex, fragmentIndexes, rbis, hit: !!hit, });
+  plays.push({ index: runnerIndex, fragmentIndexes, rbis, hit: !!hit, atBat: !outcome.noAtBat });
 
   return { ...state, plays, fragments };
 }

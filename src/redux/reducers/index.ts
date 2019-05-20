@@ -5,7 +5,11 @@ import { playerReducer } from './players';
 const initialState: AppState = {
   plays: [],
   fragments: [],
-  players: [],
+  players: Array(9).fill(null).map((_, i) => ({
+    name: '',
+    position: '',
+    slot: i
+  })),
 };
 
 export default function rootReducer(state = initialState, action: ActionTypes): AppState {

@@ -1,5 +1,5 @@
 import { createSelector } from 'reselect';
-import { Play, PlayFragment, AppState } from './types';
+import { Play, Player, PlayFragment, AppState } from './types';
 
 interface GroupDict<T> {
   [key: string]: T[];
@@ -142,7 +142,52 @@ function getOutsByBatterImpl(fragments: PlayFragment[]) {
   );
 }
 
+export interface BatterStatsEntry {
+  slot: number;
+  atBats: number;
+  hits: number;
+  runs: number;
+  rbis: number;
+}
+
+function getStatisticsByBatterImpl(plays: Play[], fragments: PlayFragment[], players: Player[]) {
+  const result = [];
+  for (const player of players) {
+    const { slot, subbedOutIndex } = player;
+
+    const playerPlays = plays.filter(
+      f => f.index % 9 == slot &&
+      (subbedOutIndex === undefined || subbedOutIndex < f.index));
+
+    const playerFragments = fragments.filter(
+      f => f.runnerIndex % 9 == slot &&
+      (subbedOutIndex === undefined || subbedOutIndex < f.runnerIndex));
+
+    const atBats = playerPlays.filter(play => play.atBat).length;
+    const hits = playerPlays.filter(play => play.hit).length;
+    const rbis = playerPlays.reduce(
+      (rbis, play) => rbis + play.rbis,
+      0);
+
+    const runs = ([...playerFragments.reduce(
+        (rv, f) => {
+          rv.set(f.runnerIndex, (rv.get(f.runnerIndex) || 0) + f.bases);
+          return rv;
+        },
+        new Map<number, number>())
+      .entries()]
+      .filter(([ index, bases ]) => bases == 4)
+    ).length;
+
+
+    result.push({ slot, atBats, hits, runs, rbis });
+  }
+
+  return result;
+}
+
 export const getPlays = (state: AppState) => state.plays;
+export const getPlayers = (state: AppState) => state.players;
 export const getFragments = (state: AppState) => state.fragments;
 
 export const getInningMeta =
@@ -174,3 +219,6 @@ export const getFragmentsByBatter
 
 export const getOutsByBatter
   = createSelector(getFragments, getOutsByBatterImpl);
+
+export const getStatisticsByBatter
+  = createSelector(getPlays, getFragments, getPlayers, getStatisticsByBatterImpl);

@@ -132,6 +132,23 @@ a:hover {
   font-size: 1.5em;
 }
 
+.batter-stats-header span, .batter-stats-row span  {
+  padding-left: 5px;
+  text-align: left;
+  width: 60px;
+  display: inline-block;
+}
+
+.batter-stats-header span {
+  font-size: 1.5em;
+  height: 35px;
+}
+
+.batter-stats-row span {
+  height: 100px;
+  border: 1px dotted #aaa;
+}
+
 .play-types li {
   list-style-type: none;
   text-align: left;
