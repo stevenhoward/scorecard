@@ -1,5 +1,5 @@
 import { createSelector } from 'reselect';
-import { Play, Player, PlayFragment, AppState } from './types';
+import { Play, Player, PlayFragment, AppState } from '../types';
 
 interface GroupDict<T> {
   [key: string]: T[];
