@@ -1,5 +1,5 @@
 import React, { Component, CSSProperties, ReactNode } from 'react';
-import BasePath, {BasePathProps} from './BasePath';
+import BasePath, { BasePathProps, Status } from './BasePath';
 
 // There are only two hard problems in computer science: Caching and naming
 // things.
@@ -31,7 +31,7 @@ interface DiagramProps {
   rbis: number;
 }
 
-function* statusFromReached(legs: DiagramLeg[], enabled: boolean) {
+function* statusFromReached(legs: DiagramLeg[], enabled: boolean) : IterableIterator<Status> {
   let reachedPrevious = true;
   for (let i = 0; i < 4; ++i) {
     const reached = legs[i] ? legs[i].reached : undefined;
@@ -51,19 +51,30 @@ function* statusFromReached(legs: DiagramLeg[], enabled: boolean) {
       reachedPrevious = false;
     }
   }
-
-  // Solely to placate the type checker
-  if (false) {
-    yield 'did-not-reach';
-  }
 }
 
-export default function Diagram(props: DiagramProps) {
-  const { legs, outDescription, outNumber, rbis, enabled } = props;
+function createOutDescriptionFragment(props: DiagramProps) {
+  const { outDescription } = props;
 
-  let outNumberFragment: ReactNode = null;
+  if (outDescription) {
+    const description = ([] as string[]).concat(outDescription);
+    // Vertically center the multiline text
+    const offset = description.length * 15 / 2;
+    return (
+      <text className="out-description" x={50} y={50-offset}
+      onClick={() => props.onBaseClicked(0)}>
+        { description.map(desc => <tspan x={50} dy={15} key={desc}>{desc}</tspan>) }
+      </text>
+    );
+  }
+
+  return null;
+}
+
+function createOutNumberFragment(props: DiagramProps) {
+  const { outNumber } = props;
   if (outNumber) {
-    outNumberFragment = (
+    return (
       <React.Fragment>
         <text className="out-indicator-text" x={5} y={95}>{outNumber}</text>
         <circle cx={5} cy={90} r="8" stroke="black" fill="none" />
@@ -71,22 +82,11 @@ export default function Diagram(props: DiagramProps) {
     );
   }
 
-  const status = Array.from(statusFromReached(legs, enabled));
+  return null;
+}
 
-  let outDescriptionFragment: ReactNode = null;
-  if (outDescription) {
-    const description = ([] as string[]).concat(outDescription);
-    // Vertically center the multiline text
-    const offset = description.length * 15 / 2;
-    outDescriptionFragment = (
-      <text className="out-description" x={50} y={50-offset}
-      onClick={() => props.onBaseClicked(0)}>
-        { description.map(desc => <tspan x={50} dy={15} key={desc}>{desc}</tspan>) }
-      </text>
-    );
-
-    status[0] = 'did-not-reach';
-  }
+function createRbisFragment(props: DiagramProps) {
+  const { rbis } = props;
 
   const rbiCircles = [
     { cx: 90, cy: 90, r: 3, stroke: 'black', fill: 'none', key: 0 },
@@ -95,46 +95,41 @@ export default function Diagram(props: DiagramProps) {
     { cx: 96, cy: 96, r: 3, stroke: 'black', fill: 'none', key: 3 },
   ];
 
-  const rbisFragment = rbiCircles.slice(0, rbis)
-    .map(circleProps => <circle {...circleProps} />);
+  return rbiCircles.slice(0, rbis).map(circleProps => <circle {...circleProps} />);
+}
 
-  // Generates a function that calls props.onBaseClicked(base) if the previous
-  // bases are filled in
-  const genOnBaseClicked = (base: number) =>
-    () => {
-      if (status[base] != 'initial') {
-          props.onBaseClicked(base);
-      }
-    };
+function createBasePathFragments(props: DiagramProps) {
+  const { enabled, legs, onBaseClicked, outDescription } = props;
 
+  const status: Status[] = outDescription ?
+    ['did-not-reach', 'initial', 'initial', 'initial'] :
+    [...statusFromReached(legs, enabled)];
+
+  const basePathDimensions = [
+    { x1: 50,  y1: 100,  x2: 100,  y2: 50 },
+    { x1: 100,  y1: 50,  x2: 50,  y2: 0 },
+    { x1: 50,  y1: 0,  x2: 0,  y2: 50 },
+    { x1: 0,  y1: 50,  x2: 50,  y2: 100 },
+  ];
+
+  return Array(4).fill(null).map((_, i) => (
+    <BasePath {...basePathDimensions[i]}
+      status={status[i]}
+      result={legs[i] && legs[i].label}
+      onClick={() => { if (status[i] != 'initial') { onBaseClicked(i); } }}
+    />
+  ));
+}
+
+export default function Diagram(props: DiagramProps) {
   return (
     <svg viewBox="-10 0 120 100" xmlns="http://www.w3.org/2000/svg" width="110" height="100"
       className="base-path-diagram">
 
-      <BasePath
-        x1={50} y1={100} x2={100} y2={50}
-        status={status[0]}
-        result={legs[0] && legs[0].label}
-        onClick={genOnBaseClicked(0)} />
-      <BasePath
-        x1={100} y1={50} x2={50} y2={0}
-        status={status[1]}
-        result={legs[1] && legs[1].label}
-        onClick={genOnBaseClicked(1)} />
-      <BasePath
-        x1={50} y1={0} x2={0} y2={50}
-        status={status[2]}
-        result={legs[2] && legs[2].label}
-        onClick={genOnBaseClicked(2)} />
-      <BasePath
-        x1={0} y1={50} x2={50} y2={100}
-        status={status[3]}
-        result={legs[3] && legs[3].label}
-        onClick={genOnBaseClicked(3)} />
-
-      {outNumberFragment}
-      {outDescriptionFragment}
-      {rbisFragment}
+      {createBasePathFragments(props)}
+      {createOutNumberFragment(props)}
+      {createOutDescriptionFragment(props)}
+      {createRbisFragment(props)}
     </svg>
   )
 }
