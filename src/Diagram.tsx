@@ -115,22 +115,22 @@ export default function Diagram(props: DiagramProps) {
         x1={50} y1={100} x2={100} y2={50}
         status={status[0]}
         result={legs[0] && legs[0].label}
-        handleClick={genOnBaseClicked(0)} />
+        onClick={genOnBaseClicked(0)} />
       <BasePath
         x1={100} y1={50} x2={50} y2={0}
         status={status[1]}
         result={legs[1] && legs[1].label}
-        handleClick={genOnBaseClicked(1)} />
+        onClick={genOnBaseClicked(1)} />
       <BasePath
         x1={50} y1={0} x2={0} y2={50}
         status={status[2]}
         result={legs[2] && legs[2].label}
-        handleClick={genOnBaseClicked(2)} />
+        onClick={genOnBaseClicked(2)} />
       <BasePath
         x1={0} y1={50} x2={50} y2={100}
         status={status[3]}
         result={legs[3] && legs[3].label}
-        handleClick={genOnBaseClicked(3)} />
+        onClick={genOnBaseClicked(3)} />
 
       {outNumberFragment}
       {outDescriptionFragment}
