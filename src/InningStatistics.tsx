@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { AppState } from './redux/types';
-import { getPlaysByInning, getTotalBasesByInning } from './redux/selectors';
+import { getHitsByInning, getRunsByInning } from './redux/selectors';
 
 export interface OwnProps {
   inningNumber: number;
@@ -39,13 +39,10 @@ class InningStatistics extends Component<InningStatsProps, {}> {
 function mapStateToProps(state: AppState, ownProps: OwnProps) {
   const { inningNumber } = ownProps;
 
-  const playsByInning = getPlaysByInning(state);
-  if (playsByInning.length > inningNumber) {
-    const totalBases = getTotalBasesByInning(state)[inningNumber];
-    const runs = [...totalBases.values()].filter(bases => bases == 4).length;
-
-    const plays = playsByInning[inningNumber];
-    const hits = plays.filter(play => play.hit).length;
+  const hitsByInning = getHitsByInning(state);
+  if (hitsByInning.length > inningNumber) {
+    const runs = getRunsByInning(state)[inningNumber];
+    const hits = hitsByInning[inningNumber];
 
     return { hits, runs };
   }

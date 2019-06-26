@@ -186,6 +186,16 @@ function getStatisticsByBatterImpl(plays: Play[], fragments: PlayFragment[], pla
   return result;
 }
 
+function getRunsByInningImpl(totalBasesByInning: Map<number, number>[]) {
+  return totalBasesByInning.map(basesThisInning =>
+    [...basesThisInning.values()].filter(bases => bases == 4).length);
+}
+
+function getHitsByInningImpl(playsByInning: Play[][]) {
+  return playsByInning.map(playsThisInning =>
+    playsThisInning.filter(play => play.hit).length);
+}
+
 export const getPlays = (state: AppState) => state.plays;
 export const getPlayers = (state: AppState) => state.players;
 export const getFragments = (state: AppState) => state.fragments;
@@ -207,6 +217,12 @@ export const getCurrentInningFragments =
 
 export const getTotalBasesByInning =
   createSelector(getInningMeta, getFragments, getTotalBasesByInningImpl);
+
+export const getRunsByInning =
+  createSelector(getTotalBasesByInning, getRunsByInningImpl);
+
+export const getHitsByInning =
+  createSelector(getPlaysByInning, getHitsByInningImpl);
 
 export const getBaseRunners =
   createSelector(getTotalBasesByInning, getBaseRunnersImpl);
