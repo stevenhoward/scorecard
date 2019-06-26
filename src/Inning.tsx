@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import {connect} from 'react-redux';
 import PlateAppearance from './PlateAppearance';
 import {AppState, Play, PlayFragment} from './redux/types';
-import { getInningMeta, getPlaysByInning, getTotalBasesByInning } from './redux/selectors';
+import { getPlaysByInning, getTotalBasesByInning } from './redux/selectors';
 
 export interface OwnProps {
   // Zero-based index of this inning.
