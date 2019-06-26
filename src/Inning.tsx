@@ -18,34 +18,11 @@ interface StateProps {
 
   plays: Play[]
   fragments: PlayFragment[];
-
-  runs: number;
 }
 
 type InningProps = OwnProps & StateProps
 
 class Inning extends Component<InningProps, {}> {
-  private renderStatistics() {
-    const { plays, fragments, runs } = this.props;
-    const hits = plays.filter(play => play.hit).length;
-
-    return (
-      <table className="statistics">
-        <tbody>
-          <tr>
-            <th>Runs</th>
-            <td>{runs}</td>
-          </tr>
-
-          <tr>
-            <th>Hits</th>
-            <td>{hits}</td>
-          </tr>
-        </tbody>
-      </table>
-    );
-  }
-
   render() {
     const { inningNumber, fragments, plays, startIndex } = this.props;
 
@@ -79,13 +56,13 @@ class Inning extends Component<InningProps, {}> {
     }
 
     return (
-      <div className="inning-container">
+      // Nested under .inning-container with InningStatistics.
+      <React.Fragment>
         <div className="inning-header">{inningNumber + 1}</div>
         <div className="inning-columns">
           {columns}
         </div>
-        {this.renderStatistics()}
-      </div>
+      </React.Fragment>
     )
   }
 }
@@ -98,22 +75,17 @@ function mapStateToProps(state: AppState, ownProps: OwnProps) {
 
   let startIndex = -Infinity;
   let plays: Play[] = [];
-  let runs = 0;
 
   if (playsByInning.length > inningNumber) {
-    startIndex = inningNumber == 0
-      ? 0
-      : playsByInning[inningNumber - 1].slice(-1)[0].index + 1;
-
     plays = playsByInning[inningNumber];
-    runs = [...totalBasesByInning[inningNumber].values()].filter(bases => bases >= 4).length;
+    startIndex = inningNumber == 0 ? 0 : plays[plays.length - 1].index + 1;
   }
 
   const enabled = playsByInning.length == inningNumber + 1;
 
   const { fragments } = state;
 
-  return { plays, startIndex, enabled, fragments, runs };
+  return { plays, startIndex, enabled, fragments };
 }
 
 export default connect(mapStateToProps)(Inning);
