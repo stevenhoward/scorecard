@@ -54,7 +54,7 @@ function* statusFromReached(legs: DiagramLeg[], enabled: boolean) : IterableIter
 }
 
 function createOutDescriptionFragment(props: DiagramProps) {
-  const { outDescription } = props;
+  const { onBaseClicked, outDescription } = props;
 
   if (outDescription) {
     const description = ([] as string[]).concat(outDescription);
@@ -62,7 +62,7 @@ function createOutDescriptionFragment(props: DiagramProps) {
     const offset = description.length * 15 / 2;
     return (
       <text className="out-description" x={50} y={50-offset}
-      onClick={() => props.onBaseClicked(0)}>
+      onClick={() => onBaseClicked(0)}>
         { description.map(desc => <tspan x={50} dy={15} key={desc}>{desc}</tspan>) }
       </text>
     );
@@ -89,22 +89,28 @@ function createRbisFragment(props: DiagramProps) {
   const { rbis } = props;
 
   const rbiCircles = [
-    { cx: 90, cy: 90, r: 3, stroke: 'black', fill: 'none', key: 0 },
-    { cx: 96, cy: 90, r: 3, stroke: 'black', fill: 'none', key: 1 },
-    { cx: 90, cy: 96, r: 3, stroke: 'black', fill: 'none', key: 2 },
-    { cx: 96, cy: 96, r: 3, stroke: 'black', fill: 'none', key: 3 },
+    { cx: 90, cy: 90 },
+    { cx: 96, cy: 90 },
+    { cx: 90, cy: 96 },
+    { cx: 96, cy: 96 },
   ];
 
-  return rbiCircles.slice(0, rbis).map(circleProps => <circle {...circleProps} />);
+  return rbiCircles.slice(0, rbis).map((circleProps, i) => (
+    <circle {...circleProps} r={3} stroke="black" fill="none" key={i} />
+  ));
 }
 
 function createBasePathFragments(props: DiagramProps) {
   const { enabled, legs, onBaseClicked, outDescription } = props;
 
+  // 'did-not-reach' looks like 'initial', but you can click the base path to
+  // clear it.
   const status: Status[] = outDescription ?
     ['did-not-reach', 'initial', 'initial', 'initial'] :
     [...statusFromReached(legs, enabled)];
 
+  // These are the dimensions of the diagonal line in the diagram and the
+  // invisible click target rectangle
   const basePathDimensions = [
     { x1: 50,  y1: 100,  x2: 100,  y2: 50 },
     { x1: 100,  y1: 50,  x2: 50,  y2: 0 },
@@ -117,6 +123,7 @@ function createBasePathFragments(props: DiagramProps) {
       status={status[i]}
       result={legs[i] && legs[i].label}
       onClick={() => { if (status[i] != 'initial') { onBaseClicked(i); } }}
+      key={i}
     />
   ));
 }

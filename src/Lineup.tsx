@@ -17,8 +17,8 @@ function Slot(props: Player) {
 
   return (
     <div className="player-line">
-      <input type="text" className="player-name" value={name} />
-      <input type="text" className="jersey-number" value={jerseyNumber} />
+      <input type="text" className="player-name" value={name} readOnly />
+      <input type="text" className="jersey-number" value={jerseyNumber} readOnly />
     </div>
   );
 }
