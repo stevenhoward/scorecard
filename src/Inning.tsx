@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
-import {connect} from 'react-redux';
-import PlateAppearance from './PlateAppearance';
-import {AppState, Play, PlayFragment} from './redux/types';
+import { connect } from 'react-redux';
+import { AppState, Play, PlayFragment } from './redux/types';
 import { getPlaysByInning, getTotalBasesByInning } from './redux/selectors';
+import PlateAppearance from './PlateAppearance';
 
 export interface OwnProps {
   // Zero-based index of this inning.
@@ -67,19 +67,31 @@ class Inning extends Component<InningProps, {}> {
   }
 }
 
+function getStartIndex(playsByInning: Play[][], inningNumber: number) {
+  if (inningNumber == 0) {
+    // Start of the game means use the first index
+    return 0;
+  }
+
+  // "+1" because there's a new empty array for an inning that has just started
+  if (inningNumber + 1 > playsByInning.length) {
+    // Inning hasn't happened yet and can't be interacted with
+    return -Infinity;
+  }
+
+  const previousInning = playsByInning[inningNumber - 1];
+  const lastPlay = previousInning[previousInning.length - 1];
+  return lastPlay.index + 1;
+}
+
 function mapStateToProps(state: AppState, ownProps: OwnProps) {
   const { inningNumber } = ownProps;
 
   const playsByInning = getPlaysByInning(state);
   const totalBasesByInning = getTotalBasesByInning(state);
 
-  let startIndex = -Infinity;
-  let plays: Play[] = [];
-
-  if (playsByInning.length > inningNumber) {
-    plays = playsByInning[inningNumber];
-    startIndex = inningNumber == 0 ? 0 : plays[plays.length - 1].index + 1;
-  }
+  const startIndex = getStartIndex(playsByInning, inningNumber);
+  const plays = playsByInning.length > inningNumber ? playsByInning[inningNumber] : [];
 
   const enabled = playsByInning.length == inningNumber + 1;
 
