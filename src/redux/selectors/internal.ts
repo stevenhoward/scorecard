@@ -34,7 +34,8 @@ function getInningMetaImpl(plays: Play[], fragments: PlayFragment[]) : InningMet
     innings.push({ firstFragment, lastFragment, firstPlay, lastPlay: playIndex });
   }
 
-  // If there are no outs,
+  // If the last fragment was the end of the inning, or this is the start of the
+  // game, push an empty inning onto the result
   if (outs === 3 || !innings.length) {
     innings.push({
       firstFragment: fragmentIndex,

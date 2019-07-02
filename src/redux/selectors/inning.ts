@@ -7,22 +7,60 @@ interface CurrentInning {
   inningPlays: Play[];
 }
 
-function getTotalBasesByInningImpl(inningMeta: InningMeta[], fragments: PlayFragment[]) : Map<number, number>[] {
-  return inningMeta.map(({ firstFragment, lastFragment }) =>
-    (fragments
-      .slice(firstFragment, lastFragment)
-      .reduce(
+interface InningSlice {
+  inningFragments: PlayFragment[];
+  inningPlays: Play[];
+}
+
+function getInningsImpl(plays: Play[], fragments: PlayFragment[]) : InningSlice[] {
+  const result: InningSlice[] = [];
+
+  let lastPlay = 0, fragmentIndex = 0;
+  let outs = 0;
+
+  for (let inningNumber = 0; fragmentIndex < fragments.length; ++inningNumber) {
+    const firstFragment = fragmentIndex, firstPlay = lastPlay;
+
+    // The third out in the inning should always be the last fragment for that
+    // inning
+    for (outs = 0; outs < 3 && fragmentIndex < fragments.length; ++fragmentIndex) {
+      if (fragments[fragmentIndex].bases === 0) {
+        ++outs;
+      }
+    }
+
+    const inningFragments = fragments.slice(firstFragment, fragmentIndex);
+
+    lastPlay = Math.max(...inningFragments.map(f => f.runnerIndex)) + 1;
+    const inningPlays = plays.slice(firstPlay, lastPlay);
+
+    result.push({ inningFragments, inningPlays });
+  }
+
+  if (outs == 3 || !result.length) {
+    const inningFragments = fragments.slice(fragmentIndex);
+    const inningPlays = plays.slice(lastPlay);
+    result.push({ inningFragments, inningPlays });
+  }
+
+  return result;
+}
+
+const getInnings = createSelector(getPlays, getFragments, getInningsImpl);
+
+function getTotalBasesByInningImpl(innings: InningSlice[]) : Map<number, number>[] {
+  return innings.map(({ inningFragments }) =>
+    inningFragments.reduce(
         (rv, fragment) => {
           const { runnerIndex, bases } = fragment;
           rv.set(runnerIndex, (rv.get(runnerIndex) || 0) + bases);
           return rv;
         },
-        new Map<number, number>())
-    ));
+        new Map<number, number>()));
 }
 
 export const getTotalBasesByInning =
-  createSelector(getInningMeta, getFragments, getTotalBasesByInningImpl);
+  createSelector(getInnings, getTotalBasesByInningImpl);
 
 // Returns a 3-tuple with the index of the players at [first, second, third]
 // base.

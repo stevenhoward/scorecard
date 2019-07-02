@@ -10,48 +10,55 @@ export interface OwnProps {
 }
 
 interface StateProps {
-  enabled: boolean;
+  isCurrentInning: boolean;
 
-  // 0 for the top of the first.
-  // -Infinity for an inning that hasn't started yet.
-  startIndex: number;
+  // For an active inning, this number is used to add new Plays.
+  startIndex: number | null;
 
   plays: Play[]
-  fragments: PlayFragment[];
+
+  // Scenario: 3 up, 3 down in the first, and now is the start of the second.
+  // We need to start filling in diagrams from where we left off vertically.
+  // The 4-hole batter is up first, so this number is 3
+  offset: number;
 }
 
 type InningProps = OwnProps & StateProps
 
 class Inning extends Component<InningProps, {}> {
   render() {
-    const { inningNumber, fragments, plays, startIndex } = this.props;
+    const { isCurrentInning, inningNumber, plays, offset, startIndex } = this.props;
 
-    const maxIndex = plays.length
-      ? Math.max(...plays.map(play => play.index)) + 1
-      : 0;
+    const maxIndex = plays.length ? plays[plays.length - 1].index + 1 : (startIndex || 0);
 
     // 9 cells with data = new column for 10th.
     const cells = Math.ceil((plays.length + 1) / 9) * 9;
 
-    const plateAppearances = Array(cells).fill(null).map((_, i) => {
-      let batterIndex = -Infinity;
-      if (i < plays.length || i == plays.length && this.props.enabled) {
-        batterIndex = i + startIndex;
-      }
+    let key = 0;
+    const past = plays.map(play => (
+      <PlateAppearance rbis={play.rbis} index={play.index} enabled={isCurrentInning} key={key++} />
+    ));
 
-      return (<PlateAppearance
-        rbis={plays[i] ? plays[i].rbis : 0}
-        key={i}
-        index={batterIndex}
-        enabled={i <= maxIndex && this.props.enabled && batterIndex >= 0}
-      />);
-    });
+    let present: JSX.Element[] = [];
+    if (isCurrentInning) {
+      present.push(<PlateAppearance rbis={0} index={maxIndex} enabled={true} key={key++} />);
+    }
+
+    const padLength = cells - past.length - present.length;
+
+    const future = Array(padLength).fill(null).map(() => (
+      <PlateAppearance rbis={0} enabled={false} index={NaN} key={key++} />
+    ));
+
+    const plateAppearances = [...past, ...present, ...future];
 
     const columns = [];
     for (let i = 0; i < plateAppearances.length; i += 9) {
       let column = plateAppearances.slice(i, i + 9);
-      const shiftIndex = 9 - startIndex % 9;
-      column = [...column.slice(shiftIndex), ...column.slice(0, shiftIndex)];
+
+      // If the offset is 3, then the diagram at the top of the column will be
+      // the 6th batter up.
+      column = [...column.slice(9 - offset), ...column.slice(0, 9 - offset)];
       columns.push(<div className="inning-column" key={i}>{column}</div>);
     }
 
@@ -59,14 +66,13 @@ class Inning extends Component<InningProps, {}> {
       // Nested under .inning-container with InningStatistics.
       <React.Fragment>
         <div className="inning-header">{inningNumber + 1}</div>
-        <div className="inning-columns">
-          {columns}
-        </div>
+        <div className="inning-columns">{columns}</div>
       </React.Fragment>
     )
   }
 }
 
+// For the current inning
 function getStartIndex(playsByInning: Play[][], inningNumber: number) {
   if (inningNumber == 0) {
     // Start of the game means use the first index
@@ -76,7 +82,7 @@ function getStartIndex(playsByInning: Play[][], inningNumber: number) {
   // "+1" because there's a new empty array for an inning that has just started
   if (inningNumber + 1 > playsByInning.length) {
     // Inning hasn't happened yet and can't be interacted with
-    return -Infinity;
+    return null;
   }
 
   const previousInning = playsByInning[inningNumber - 1];
@@ -93,11 +99,13 @@ function mapStateToProps(state: AppState, ownProps: OwnProps) {
   const startIndex = getStartIndex(playsByInning, inningNumber);
   const plays = playsByInning.length > inningNumber ? playsByInning[inningNumber] : [];
 
-  const enabled = playsByInning.length == inningNumber + 1;
+  const isCurrentInning = playsByInning.length == inningNumber + 1;
 
-  const { fragments } = state;
+  // If startIndex is null, this inning is in the future and there's no need for
+  // an offset.
+  const offset = startIndex != null ? startIndex % 9 : 0;
 
-  return { plays, startIndex, enabled, fragments };
+  return { plays, startIndex, isCurrentInning, offset };
 }
 
 export default connect(mapStateToProps)(Inning);
