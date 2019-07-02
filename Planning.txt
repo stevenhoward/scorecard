@@ -1,10 +1,22 @@
-Current structure is that fragments are stored directly as children on a play.
-What if we stored fragments as a flat, ordered list, and the plays were just
-references to particular indices?
+Trying again to implement two teams. Plan is as follows:
 
-This would allow for free-floating plays like a stolen base or wild pitch, which
-aren't associated with a particular at-bat.
+* plays, fragments, players that are stored on AppState now belong to a
+  TeamState object
+* AppState now has { home: TeamState, away: TeamState, activeTeam: 'home' |
+  'away' }.
 
-Would also potentially make it easier to clean up the tests, which I've been
-neglecting.
+We change the selectors underlying getPlays, getFragments, and getPlayers to
+check the active team first.
 
+Each reducer still works more or less the same way, but the root reducer decides
+which team to stuff the results in. Difficulty: we still need to pass AppState
+down to the reducers, which will then pass TeamState back up the chain. This
+means the sub-reducers aren't really reducers at all, but that seems like an
+acceptable price to pay.
+
+This architecture will eventually present some difficulties, like if we want to
+flip back and forth between the cards for each team to see what's happened so
+far. Should we distinguish between 'active' and 'visible'? Should 'active' be
+derived from the data (like my last attempt)? How do we represent that overall
+state of the app, like "it's the bottom of the 4th with two outs," indicating
+that the next batter should be fillable?
