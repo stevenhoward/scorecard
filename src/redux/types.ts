@@ -109,7 +109,7 @@ export interface Play {
 
   // How many RBIs did the batter get?
   // TODO: this is derived, and should not be part of the source of truth
-  // (or is it? Note GiDP exception)
+  // (or is it? Note GiDP, Error exceptions)
   rbis: number;
 
   // Did the batter get a hit?

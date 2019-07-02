@@ -48,6 +48,7 @@ function getInningsImpl(plays: Play[], fragments: PlayFragment[]) : InningSlice[
 
 const getInnings = createSelector(getPlays, getFragments, getInningsImpl);
 
+
 function getTotalBasesByInningImpl(innings: InningSlice[]) : Map<number, number>[] {
   return innings.map(({ inningFragments }) =>
     inningFragments.reduce(
@@ -83,32 +84,20 @@ export const getBaseRunners =
   createSelector(getTotalBasesByInning, getBaseRunnersImpl);
 
 
-function getCurrentInningImpl(inningMeta: InningMeta[], plays: Play[], fragments: PlayFragment[]) : CurrentInning {
-  const { firstPlay, lastPlay, firstFragment, lastFragment } = inningMeta[inningMeta.length - 1];
-
-  const inningPlays = plays.slice(firstPlay, lastPlay);
-  const inningFragments = fragments.slice(firstFragment, lastFragment);
-  return { inningPlays, inningFragments };
+function getCurrentInningImpl(innings: InningSlice[]) : CurrentInning {
+  return innings[innings.length - 1];
 }
 
 export const getCurrentInning =
-  createSelector(getInningMeta, getPlays, getFragments, getCurrentInningImpl);
+  createSelector(getInnings, getCurrentInningImpl);
 
 
-function getCurrentInningFragmentsImpl({ inningFragments } : CurrentInning) {
-  return inningFragments;
-}
-
-export const getCurrentInningFragments =
-  createSelector(getCurrentInning, getCurrentInningFragmentsImpl);
-
-
-function getOutsInInningImpl(fragments: PlayFragment[]) {
-  return fragments.filter(f => f.bases === 0).length;
+function getOutsInInningImpl({ inningFragments } : InningSlice) {
+  return inningFragments.filter(f => f.bases === 0).length;
 }
 
 export const getOutsInInning
-  = createSelector(getCurrentInningFragments, getOutsInInningImpl);
+  = createSelector(getCurrentInning, getOutsInInningImpl);
 
 
 function getRunsByInningImpl(totalBasesByInning: Map<number, number>[]) {
@@ -120,32 +109,26 @@ export const getRunsByInning =
   createSelector(getTotalBasesByInning, getRunsByInningImpl);
 
 
-function getPlaysByInningImpl(inningMeta: InningMeta[], plays: Play[]) {
-  return inningMeta.reduce(
-    (rv, { firstPlay, lastPlay }) =>
-      [...rv, plays.slice(firstPlay, lastPlay)],
-    [] as Play[][]);
+function getPlaysByInningImpl(innings: InningSlice[]) {
+  return innings.map(({ inningPlays }) => inningPlays);
 }
 
 export const getPlaysByInning =
-  createSelector(getInningMeta, getPlays, getPlaysByInningImpl);
+  createSelector(getInnings, getPlaysByInningImpl);
 
 
-function getHitsByInningImpl(playsByInning: Play[][]) {
-  return playsByInning.map(playsThisInning =>
-    playsThisInning.filter(play => play.hit).length);
-}
-
-export const getHitsByInning =
-  createSelector(getPlaysByInning, getHitsByInningImpl);
-
-
-function getFragmentsByInningImpl(inningMeta: InningMeta[], fragments: PlayFragment[]) {
-  return inningMeta.reduce(
-    (rv, { firstFragment, lastFragment }) =>
-      [...rv, fragments.slice(firstFragment, lastFragment)] ,
-    [] as PlayFragment[][]);
+function getFragmentsByInningImpl(innings: InningSlice[]) {
+  return innings.map(({ inningFragments }) => inningFragments);
 }
 
 export const getFragmentsByInning =
-  createSelector(getInningMeta, getFragments, getFragmentsByInningImpl);
+  createSelector(getInnings, getFragmentsByInningImpl);
+
+
+function getHitsByInningImpl(innings: InningSlice[]) {
+  return innings.map(({ inningPlays }) =>
+    inningPlays.filter(play => play.hit).length);
+}
+
+export const getHitsByInning =
+  createSelector(getInnings, getHitsByInningImpl);
