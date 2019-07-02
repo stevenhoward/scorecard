@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 import { AppState, AvailabilityFilter, PlayOption, PlayOutcome, PlayFragment } from './redux/types';
 import { OutcomeTypes } from './outcomeTypes';
-import { getOutsInInning, getBaseRunners } from './redux/selectors';
+import { getPlays, getOutsInInning, getBaseRunners } from './redux/selectors';
 
 import SelectFielder from './SelectFielder';
 import Dialog from './Dialog';
@@ -158,7 +158,7 @@ function mapStateToProps(state: AppState, ownProps: OwnProps): StateProps {
   return {
     runners: getBaseRunners(state),
     outsInInning: getOutsInInning(state),
-    succeedingBatters: state.plays.filter(p => p.index > index).map(p => p.index),
+    succeedingBatters: getPlays(state).filter(p => p.index > index).map(p => p.index),
   };
 }
 

@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { getPlayers } from './redux/selectors';
 import { addPlayer } from './redux/actions';
-import { AppState,Player } from './redux/types';
+import { AppState, Player } from './redux/types';
 
 export interface OwnProps {
 }
@@ -47,7 +48,7 @@ class Lineup extends Component<LineupProps, {}> {
 }
 
 function mapStateToProps(state: AppState, ownProps: OwnProps): StateProps {
-  return { players: state.players };
+  return { players: getPlayers(state) };
 }
 
 export default connect(mapStateToProps, { addPlayer })(Lineup);
