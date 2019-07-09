@@ -2,11 +2,6 @@ import { createSelector } from 'reselect';
 import { Play, Player, PlayFragment } from '../types';
 import { getPlays, getFragments } from './internal';
 
-interface CurrentInning {
-  inningFragments: PlayFragment[];
-  inningPlays: Play[];
-}
-
 interface InningSlice {
   inningFragments: PlayFragment[];
   inningPlays: Play[];
@@ -84,7 +79,7 @@ export const getBaseRunners =
   createSelector(getTotalBasesByInning, getBaseRunnersImpl);
 
 
-function getCurrentInningImpl(innings: InningSlice[]) : CurrentInning {
+function getCurrentInningImpl(innings: InningSlice[]) : InningSlice {
   return innings[innings.length - 1];
 }
 
