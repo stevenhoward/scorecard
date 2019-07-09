@@ -1,29 +1,11 @@
-Trying again to implement two teams. Plan is as follows:
+Now play alternates between the home and away team, which isn't super obvious
+from the UI except the small "away" or "home" at the top of the page.
 
-* plays, fragments, players that are stored on AppState now belong to a
-  TeamState object
-* AppState now has { home: TeamState, away: TeamState, activeTeam: 'home' |
-  'away' }.
+What I need is a cleaner separation between the selectors that operate only on
+the *current* inning, which I need to add new data, and those that are used for
+displaying the card. Perhaps in this way the home/away alternation can be
+handled implicitly in a selector, and the store only needs to know which card
+we're displaying.
 
-We change the selectors underlying getPlays, getFragments, and getPlayers to
-check the active team first.
-
-Each reducer still works more or less the same way, but the root reducer decides
-which team to stuff the results in. Difficulty: we still need to pass AppState
-down to the reducers, which will then pass TeamState back up the chain. This
-means the sub-reducers aren't really reducers at all, but that seems like an
-acceptable price to pay.
-
-This architecture will eventually present some difficulties, like if we want to
-flip back and forth between the cards for each team to see what's happened so
-far. Should we distinguish between 'active' and 'visible'? Should 'active' be
-derived from the data (like my last attempt)? How do we represent that overall
-state of the app, like "it's the bottom of the 4th with two outs," indicating
-that the next batter should be fillable?
-
-
-
-A flat layout (where "which team is this" is dependent on the position of a play
-or fragment in relation to the total number of outs in the game) makes things
-more difficult in a number of ways. The first goal should be to do everything on
-the home team.
+TODO: some kind of transition effect when swapping sides?
+TODO: Render "{top/bottom} of the {inning}, {outs} outs" at the top of the page.

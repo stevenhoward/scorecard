@@ -4,3 +4,4 @@ import { createSelector } from 'reselect';
 export * from './internal';
 export * from './batter';
 export * from './inning';
+export * from './currentInning';

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { AppState, Play } from '../redux/types';
-import { getPlaysByInning } from '../redux/selectors';
+import { getGameStatus, getPlaysByInning } from '../redux/selectors';
 import Inning from './Inning';
 import InningStatistics from './InningStatistics';
 import Lineup from './Lineup';
@@ -11,13 +11,14 @@ export interface OwnProps {}
 
 interface StateProps {
   innings: Play[][];
+  gameStatus: string;
 }
 
 type GameProps = OwnProps & StateProps;
 
 class Game extends Component<StateProps, {}> {
   render() {
-    const { innings } = this.props;
+    const { gameStatus, innings } = this.props;
     const numInnings = Math.max(innings.length, 9);
 
     const inningFragments = Array(numInnings).fill(null).map((_, i) => (
@@ -28,17 +29,23 @@ class Game extends Component<StateProps, {}> {
     ));
 
     return (
-      <div className="game">
-        <Lineup />
-        {inningFragments}
-        <BatterStatistics />
-      </div>
+      <React.Fragment>
+        <div className="game-status">{gameStatus}</div>
+        <div className="game">
+          <Lineup />
+          {inningFragments}
+          <BatterStatistics />
+        </div>
+      </React.Fragment>
     );
   }
 }
 
 function mapStateToProps(state: AppState): StateProps {
-  return { innings: getPlaysByInning(state) };
+  return {
+    innings: getPlaysByInning(state),
+    gameStatus: getGameStatus(state),
+  };
 }
 
 export default connect(mapStateToProps)(Game);

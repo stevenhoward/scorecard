@@ -2,7 +2,7 @@ import { createSelector } from 'reselect';
 import { Play, Player, PlayFragment } from '../types';
 import { getPlays, getFragments } from './internal';
 
-interface InningSlice {
+export interface InningSlice {
   inningFragments: PlayFragment[];
   inningPlays: Play[];
 }
@@ -41,7 +41,7 @@ function getInningsImpl(plays: Play[], fragments: PlayFragment[]) : InningSlice[
   return result;
 }
 
-const getInnings = createSelector(getPlays, getFragments, getInningsImpl);
+export const getInnings = createSelector(getPlays, getFragments, getInningsImpl);
 
 
 function getTotalBasesByInningImpl(innings: InningSlice[]) : Map<number, number>[] {
@@ -57,42 +57,6 @@ function getTotalBasesByInningImpl(innings: InningSlice[]) : Map<number, number>
 
 export const getTotalBasesByInning =
   createSelector(getInnings, getTotalBasesByInningImpl);
-
-// Returns a 3-tuple with the index of the players at [first, second, third]
-// base.
-function getBaseRunnersImpl(totalBases: Map<number, number>[]) : [ number, number, number ] {
-  const runnersOn = ([...totalBases[totalBases.length - 1].entries()]
-    .map(([ runnerIndex, base ]) => ({ runnerIndex, base }))
-    .filter(({ base }) => base > 0 && base < 4)
-  );
-
-  return runnersOn.reduce(
-    (rv, x) => {
-      const { runnerIndex, base } = x;
-      rv[base - 1] = runnerIndex;
-      return rv;
-    },
-    new Array(3) as [ number, number, number ]);
-}
-
-export const getBaseRunners =
-  createSelector(getTotalBasesByInning, getBaseRunnersImpl);
-
-
-function getCurrentInningImpl(innings: InningSlice[]) : InningSlice {
-  return innings[innings.length - 1];
-}
-
-export const getCurrentInning =
-  createSelector(getInnings, getCurrentInningImpl);
-
-
-function getOutsInInningImpl({ inningFragments } : InningSlice) {
-  return inningFragments.filter(f => f.bases === 0).length;
-}
-
-export const getOutsInInning
-  = createSelector(getCurrentInning, getOutsInInningImpl);
 
 
 function getRunsByInningImpl(totalBasesByInning: Map<number, number>[]) {

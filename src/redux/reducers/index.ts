@@ -1,7 +1,7 @@
 import { AppState, ActionTypes, TeamState } from '../types';
 import { playReducer } from './plays';
 import { playerReducer } from './players';
-import { getActiveTeam } from '../selectors';
+import { getActiveTeam, getInnings } from '../selectors';
 
 function initialTeamState() : TeamState {
   return {
@@ -22,8 +22,15 @@ const initialState: AppState = {
 };
 
 export default function rootReducer(state = initialState, action: ActionTypes): AppState {
+  const existingInnings = getInnings(state).length;
+
   let newState = playReducer(state, action);
   newState = playerReducer(newState, action);
+
+  if (getInnings(newState).length == existingInnings + 1) {
+    const activeTeam = newState.activeTeam == 'away' ? 'home' : 'away';
+    newState = { ...newState, activeTeam };
+  }
 
   return newState;
 }
