@@ -44,12 +44,21 @@ function getInningsImpl(plays: Play[], fragments: PlayFragment[]) : InningSlice[
 export const getInnings = createSelector(getPlays, getFragments, getInningsImpl);
 
 
+/* The results of this function are used in currentInning for calculating
+ * baserunners, and otherwise for computing the score by inning. It does not
+ * include batters who made an out.
+ */
 function getTotalBasesByInningImpl(innings: InningSlice[]) : Map<number, number>[] {
   return innings.map(({ inningFragments }) =>
     inningFragments.reduce(
         (rv, fragment) => {
           const { runnerIndex, bases } = fragment;
-          rv.set(runnerIndex, (rv.get(runnerIndex) || 0) + bases);
+          if (bases != 0) {
+            rv.set(runnerIndex, (rv.get(runnerIndex) || 0) + bases);
+          }
+          else {
+            rv.delete(runnerIndex);
+          }
           return rv;
         },
         new Map<number, number>()));
