@@ -1,11 +1,6 @@
-Now play alternates between the home and away team, which isn't super obvious
-from the UI except the small "away" or "home" at the top of the page.
-
-What I need is a cleaner separation between the selectors that operate only on
-the *current* inning, which I need to add new data, and those that are used for
-displaying the card. Perhaps in this way the home/away alternation can be
-handled implicitly in a selector, and the store only needs to know which card
-we're displaying.
+RBIs are still broken, and I may need some rearchitecting. I need a way to
+correlate "advanced by batter X" with its Play object and everything else on the
+bases (e.g. SB, WP, PB) needs to stand on its own.
 
 TODO: some kind of transition effect when swapping sides?
 
