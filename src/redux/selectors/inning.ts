@@ -1,6 +1,6 @@
 import { createSelector } from 'reselect';
 import { Play, Player, PlayFragment } from '../types';
-import { getPlays, getFragments } from './internal';
+import { getPlays, getFragments } from './core';
 
 export interface InningSlice {
   inningFragments: PlayFragment[];

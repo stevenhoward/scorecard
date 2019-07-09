@@ -8,4 +8,17 @@ handled implicitly in a selector, and the store only needs to know which card
 we're displaying.
 
 TODO: some kind of transition effect when swapping sides?
-TODO: Render "{top/bottom} of the {inning}, {outs} outs" at the top of the page.
+
+
+Stories remaining before completion
+* I can load lineups from today's MLB games into my scorecard
+  * Stats are loaded for each player
+  * Those stats are updated to reflect new data
+* I can record substitutions as they happen in game
+  * I can track who's pitching in a game with a DH
+* When the game is over, no more data can be added.
+* I can view pitcher statistics (difficulty: with DH, pitcher substitutions are
+  separate)
+* I can export my card, possibly as a PDF?
+
+* Fit and finish

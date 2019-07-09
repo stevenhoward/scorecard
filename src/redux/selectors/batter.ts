@@ -1,6 +1,6 @@
 import { createSelector } from 'reselect';
 import { Play, PlayFragment, Player } from '../types';
-import { getFragments, getPlays, getPlayers } from './internal';
+import { getFragments, getPlays, getPlayers } from './core';
 
 export interface BatterStatsEntry {
   slot: number;
