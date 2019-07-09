@@ -1,20 +1,19 @@
+import { setForActiveTeam } from './util';
+import { getActiveTeam } from '../selectors';
 import { AppState, ActionTypes, Player } from '../types';
 import { ADD_PLAYER } from '../actionTypes';
 
-const initialState: AppState = {
-  plays: [],
-  fragments: [],
-  players: [],
-};
-
 function addPlayer(state: AppState, player: Player): AppState {
-  return {
-    ...state,
-    players: [...state.players, player],
+  const teamState = getActiveTeam(state);
+  const newTeamState = {
+    ...teamState,
+    players: [...teamState.players, player],
   };
+
+  return setForActiveTeam(state, newTeamState);
 }
 
-export function playerReducer(state = initialState, action: ActionTypes): AppState {
+export function playerReducer(state: AppState, action: ActionTypes): AppState {
   switch(action.type) {
     case ADD_PLAYER:
       return addPlayer(state, action.player);

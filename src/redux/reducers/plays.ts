@@ -1,32 +1,36 @@
-import {ADD_PLAY, CLEAR_FROM} from '../actionTypes';
-import {Play, PlayOutcome, PlayFragment, ActionTypes, AppState} from '../types';
+import { setForActiveTeam } from './util';
+import { ADD_PLAY, CLEAR_FROM } from '../actionTypes';
+import { AppState, Play, PlayOutcome, PlayFragment, ActionTypes } from '../types';
 
-import { getBaseRunners, getTotalBasesByInning } from '../selectors';
+import { getActiveTeam, getBaseRunners, getTotalBasesByInning, getPlays, getFragments } from '../selectors';
 
 // Given a fragment index, removes everything that happened "after" this point.
 function clearFragmentsFrom(state: AppState, fragmentIndex: number): AppState {
   let baseIndex = 0;
 
+  const statePlays = getPlays(state);
+
   // We want to delete in chronological order, but if this is a runner that
   // might have been forced, we could wind up with the game in an invalid state
-  // (e.g. "2 runners on first"). So make sure we rewind further.
+  // (e.g. "2 runners on first"). So make sure we rewind everything that happens
+  // simultaneously.
   let revisedIndex = fragmentIndex;
-  const [ attachedPlay ] = state.plays.filter(p => p.fragmentIndexes.includes(fragmentIndex));
+  const [ attachedPlay ] = statePlays.filter(p => p.fragmentIndexes.includes(fragmentIndex));
   if (attachedPlay) {
     revisedIndex = Math.min(...attachedPlay.fragmentIndexes);
   }
 
-  const fragments = state.fragments.slice(0, revisedIndex);
-  const plays = state.plays.map(play => ({
+  const fragments = getFragments(state).slice(0, revisedIndex);
+
+  // First, remove all fragments bigger than the cutoff from each Play object
+  // Then, remove all Plays with no fragments
+  const plays = statePlays.map(play => ({
     ...play,
-    fragmentIndexes: play.fragmentIndexes.filter(i => i < fragments.length),
+    fragmentIndexes: play.fragmentIndexes.filter(i => i < revisedIndex),
   })).filter(play => play.fragmentIndexes.length > 0);
 
-  return {
-    ...state,
-    plays,
-    fragments
-  };
+  const teamState = { ...getActiveTeam(state), plays, fragments };
+  return setForActiveTeam(state, teamState);
 }
 
 function computeRbis(state: AppState, newFragments: PlayFragment[]) {
@@ -53,7 +57,8 @@ function computeRbis(state: AppState, newFragments: PlayFragment[]) {
 }
 
 function addBatterPlay(state: AppState, outcome: PlayOutcome, fragment: PlayFragment) {
-  let plays = [...state.plays], fragments = [...state.fragments];
+  let plays = getPlays(state);
+  let fragments = getFragments(state);
 
   const { handleRunners, hit, label, runnerIndex } = outcome;
   const advancedRunnerLabel = label == 'BB' ? 'BB' : `#${runnerIndex}`;
@@ -76,11 +81,13 @@ function addBatterPlay(state: AppState, outcome: PlayOutcome, fragment: PlayFrag
 
   plays.push({ index: runnerIndex, fragmentIndexes, rbis, hit: !!hit, atBat: !outcome.noAtBat });
 
-  return { ...state, plays, fragments };
+  const teamState = { ...getActiveTeam(state), plays, fragments };
+  return setForActiveTeam(state, teamState);
 }
 
 function addRunnerPlay(state: AppState, outcome: PlayOutcome, fragment: PlayFragment) : AppState {
-  let plays = [...state.plays], fragments = [...state.fragments];
+  let plays = [...getPlays(state)];
+  let fragments = [...getFragments(state)];
 
   // If the runner is not the current batter, amend the previous at bat
   const newFragmentIndex = fragments.length;
@@ -94,11 +101,14 @@ function addRunnerPlay(state: AppState, outcome: PlayOutcome, fragment: PlayFrag
 
   plays = [...plays.slice(0, -1), play];
 
-  return { ...state, plays, fragments };
+  const teamState = { ...getActiveTeam(state), plays, fragments };
+  return setForActiveTeam(state, teamState);
 }
 
 function addPlay(state: AppState, outcome: PlayOutcome) : AppState {
-  const { plays, fragments } = state;
+  const plays = getPlays(state);
+  const fragments = getFragments(state);
+
   const { runnerIndex, bases, label, hit } = outcome;
 
   const fragment = { runnerIndex, bases, label, fragmentIndex: fragments.length };
@@ -116,13 +126,7 @@ function addPlay(state: AppState, outcome: PlayOutcome) : AppState {
   }
 }
 
-const initialState: AppState = {
-  plays: [],
-  fragments: [],
-  players: [],
-};
-
-export function playReducer(state = initialState, action: ActionTypes): AppState {
+export function playReducer(state: AppState, action: ActionTypes): AppState {
   switch(action.type) {
     case ADD_PLAY:
       return addPlay(state, action.payload);

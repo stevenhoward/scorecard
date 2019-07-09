@@ -130,13 +130,20 @@ export interface Player {
   subbedOutIndex?: number;
 }
 
-// Root object for the store
-export interface AppState {
+// Data for each team is independent
+export interface TeamState {
   plays: Play[];
 
   fragments: PlayFragment[];
 
   players: Player[];
+}
+
+// Root object for the store
+export interface AppState {
+  home: TeamState;
+  away: TeamState;
+  activeTeam: 'home' | 'away';
 }
 
 /* Action types */

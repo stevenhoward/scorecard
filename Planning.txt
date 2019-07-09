@@ -20,3 +20,10 @@ far. Should we distinguish between 'active' and 'visible'? Should 'active' be
 derived from the data (like my last attempt)? How do we represent that overall
 state of the app, like "it's the bottom of the 4th with two outs," indicating
 that the next batter should be fillable?
+
+
+
+A flat layout (where "which team is this" is dependent on the position of a play
+or fragment in relation to the total number of outs in the game) makes things
+more difficult in a number of ways. The first goal should be to do everything on
+the home team.
