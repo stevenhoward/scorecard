@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { AppState } from '../redux/types';
-import { getHitsByInning, getRunsByInning } from '../redux/selectors';
+import { getHitsByInning, getRunsByInning, getTotalBasesByInning } from '../redux/selectors';
 
 export interface OwnProps {
   inningNumber: number;
@@ -10,13 +10,14 @@ export interface OwnProps {
 interface StateProps {
   hits?: number;
   runs?: number;
+  leftOn?: number;
 }
 
 type InningStatsProps = OwnProps & StateProps;
 
 class InningStatistics extends Component<InningStatsProps, {}> {
   render() {
-    const { hits, runs } = this.props;
+    const { hits, runs, leftOn } = this.props;
 
     return (
       <table className="statistics">
@@ -30,6 +31,11 @@ class InningStatistics extends Component<InningStatsProps, {}> {
             <th>Hits</th>
             <td>{hits}</td>
           </tr>
+
+          <tr>
+            <th>LoB</th>
+            <td>{leftOn}</td>
+          </tr>
         </tbody>
       </table>
     );
@@ -40,11 +46,18 @@ function mapStateToProps(state: AppState, ownProps: OwnProps) {
   const { inningNumber } = ownProps;
 
   const hitsByInning = getHitsByInning(state);
-  if (hitsByInning.length > inningNumber) {
+  const numInnings = hitsByInning.length;
+  if (numInnings > inningNumber) {
     const runs = getRunsByInning(state)[inningNumber];
     const hits = hitsByInning[inningNumber];
+    let leftOn: number | undefined;
 
-    return { hits, runs };
+    if (numInnings > inningNumber + 1) {
+      const runners = getTotalBasesByInning(state)[inningNumber]
+      leftOn = [...runners.values()].length;
+    }
+
+    return { hits, runs, leftOn };
   }
 
   return { };
