@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { getPlayers } from './redux/selectors';
-import { addPlayer } from './redux/actions';
-import { AppState, Player } from './redux/types';
+import { getPlayers } from '../redux/selectors';
+import { addPlayer } from '../redux/actions';
+import { AppState, Player } from '../redux/types';
 
 export interface OwnProps {
 }

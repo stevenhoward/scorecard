@@ -1,9 +1,9 @@
 import React, { Component, ReactNode } from 'react';
 import { connect } from 'react-redux';
 
-import { AppState, AvailabilityFilter, PlayOption, PlayOutcome, PlayFragment } from './redux/types';
+import { AppState, AvailabilityFilter, PlayOption, PlayOutcome, PlayFragment } from '../redux/types';
 import { OutcomeTypes } from './outcomeTypes';
-import { getPlays, getOutsInInning, getBaseRunners } from './redux/selectors';
+import { getPlays, getOutsInInning, getBaseRunners } from '../redux/selectors';
 
 import SelectFielder from './SelectFielder';
 import Dialog from './Dialog';

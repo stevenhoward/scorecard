@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { AppState } from './redux/types';
-import { getHitsByInning, getRunsByInning } from './redux/selectors';
+import { AppState } from '../redux/types';
+import { getHitsByInning, getRunsByInning } from '../redux/selectors';
 
 export interface OwnProps {
   inningNumber: number;

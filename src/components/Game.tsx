@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { AppState, Play } from './redux/types';
-import { getPlaysByInning } from './redux/selectors';
+import { AppState, Play } from '../redux/types';
+import { getPlaysByInning } from '../redux/selectors';
 import Inning from './Inning';
 import InningStatistics from './InningStatistics';
 import Lineup from './Lineup';

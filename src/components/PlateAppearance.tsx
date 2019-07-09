@@ -1,9 +1,9 @@
 import React, { Component, CSSProperties, ReactNode } from 'react';
 import { connect } from 'react-redux';
 
-import { AppState, Play, PlayFragment, PlayOutcome } from './redux/types';
-import { addPlay, clearFrom } from './redux/actions';
-import { getFragmentsByBatter, getOutsByBatter } from './redux/selectors';
+import { AppState, Play, PlayFragment, PlayOutcome } from '../redux/types';
+import { addPlay, clearFrom } from '../redux/actions';
+import { getFragmentsByBatter, getOutsByBatter } from '../redux/selectors';
 
 import SelectFielder from './SelectFielder';
 import Dialog from './Dialog';

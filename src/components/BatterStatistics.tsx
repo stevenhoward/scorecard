@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux'
-import { BatterStatsEntry, getStatisticsByBatter } from './redux/selectors'
-import { AppState } from './redux/types';
+import { BatterStatsEntry, getStatisticsByBatter } from '../redux/selectors'
+import { AppState } from '../redux/types';
 
 interface OwnProps { }
 

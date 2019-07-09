@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { AppState, Play, PlayFragment } from './redux/types';
-import { getPlaysByInning, getTotalBasesByInning } from './redux/selectors';
+import { AppState, Play, PlayFragment } from '../redux/types';
+import { getPlaysByInning, getTotalBasesByInning } from '../redux/selectors';
 import PlateAppearance from './PlateAppearance';
 
 export interface OwnProps {

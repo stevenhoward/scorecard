@@ -1,4 +1,6 @@
-import { AvailabilityFilterArgs, PlayFragment, PlayOption } from './redux/types';
+// Technically not a component, but tightly coupled to OutcomeSelector.
+
+import { AvailabilityFilterArgs, PlayFragment, PlayOption } from '../redux/types';
 
 function assistHelper(fielders: string) {
   if (fielders.length == 1) {
