@@ -42,7 +42,7 @@ class BatterStatistics extends Component<BatterStatisticsProps, {}> {
   }
 }
 
-function mapStateToProps(state: AppState) : StateProps {
+function mapStateToProps({ present: state } : { present: AppState }) : StateProps {
   return { batters: getStatisticsByBatter(state) };
 }
 

@@ -42,7 +42,7 @@ class InningStatistics extends Component<InningStatsProps, {}> {
   }
 }
 
-function mapStateToProps(state: AppState, ownProps: OwnProps) {
+function mapStateToProps({ present: state } : { present: AppState }, ownProps: OwnProps) {
   const { inningNumber } = ownProps;
 
   const hitsByInning = getHitsByInning(state);

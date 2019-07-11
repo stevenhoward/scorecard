@@ -1,3 +1,5 @@
+// @ts-ignore
+import undoable from 'redux-undo';
 import { AppState, ActionTypes, TeamState } from '../types';
 import { playReducer } from './plays';
 import { playerReducer } from './players';
@@ -21,7 +23,7 @@ const initialState: AppState = {
   activeTeam: 'away',
 };
 
-export default function rootReducer(state = initialState, action: ActionTypes): AppState {
+function rootReducer(state = initialState, action: ActionTypes): AppState {
   const existingInnings = getInnings(state).length;
 
   let newState = playReducer(state, action);
@@ -34,3 +36,5 @@ export default function rootReducer(state = initialState, action: ActionTypes): 
 
   return newState;
 }
+
+export default undoable(rootReducer);

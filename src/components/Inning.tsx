@@ -90,7 +90,7 @@ function getStartIndex(playsByInning: Play[][], inningNumber: number) {
   return lastPlay.index + 1;
 }
 
-function mapStateToProps(state: AppState, ownProps: OwnProps) {
+function mapStateToProps({ present: state } : { present: AppState }, ownProps: OwnProps) {
   const { inningNumber } = ownProps;
 
   const playsByInning = getPlaysByInning(state);

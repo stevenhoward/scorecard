@@ -47,7 +47,7 @@ class Lineup extends Component<LineupProps, {}> {
   }
 }
 
-function mapStateToProps(state: AppState, ownProps: OwnProps): StateProps {
+function mapStateToProps({ present: state } : { present: AppState }, ownProps: OwnProps): StateProps {
   return { players: getPlayers(state) };
 }
 

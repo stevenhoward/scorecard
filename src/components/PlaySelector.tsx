@@ -152,7 +152,7 @@ class PlaySelector extends Component<PlaySelectorProps, PlaySelectorState> {
   }
 }
 
-function mapStateToProps(state: AppState, ownProps: OwnProps): StateProps {
+function mapStateToProps({ present: state } : { present: AppState }, ownProps: OwnProps): StateProps {
   const { index } = ownProps;
 
   return {

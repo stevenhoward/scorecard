@@ -41,7 +41,7 @@ class Game extends Component<StateProps, {}> {
   }
 }
 
-function mapStateToProps(state: AppState): StateProps {
+function mapStateToProps({ present: state } : { present: AppState }): StateProps {
   return {
     innings: getPlaysByInning(state),
     gameStatus: getGameStatus(state),

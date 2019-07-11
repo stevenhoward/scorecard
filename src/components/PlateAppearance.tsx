@@ -138,7 +138,7 @@ function normalizeFragments(fragments: PlayFragment[]) {
   return { legs, outDescription };
 }
 
-function mapStateToProps(state: AppState, ownProps: OwnProps) : StateProps {
+function mapStateToProps({ present: state } : { present: AppState }, ownProps: OwnProps) : StateProps {
   const fragments = getFragmentsByBatter(state).get(ownProps.index) || [];
   const outNumber = getOutsByBatter(state)[ownProps.index];
   const normalizedProps = normalizeFragments(fragments);
