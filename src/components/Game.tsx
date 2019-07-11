@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+
+// @ts-ignore
+import { ActionCreators } from 'redux-undo';
 import { AppState, Play } from '../redux/types';
 import { getGameStatus, getPlaysByInning } from '../redux/selectors';
 import Inning from './Inning';
@@ -12,11 +15,28 @@ export interface OwnProps {}
 interface StateProps {
   innings: Play[][];
   gameStatus: string;
+
+  canUndo: boolean;
+  canRedo: boolean;
 }
 
-type GameProps = OwnProps & StateProps;
+interface DispatchProps {
+  undo: () => void;
+  redo: () => void;
+}
 
-class Game extends Component<StateProps, {}> {
+type GameProps = OwnProps & StateProps & DispatchProps;
+
+class Game extends Component<GameProps, {}> {
+  private createUndoRedo() {
+    const { canUndo, canRedo, undo, redo } = this.props;
+
+    return [
+      <button onClick={undo} disabled={!canUndo} key='undo'>undo</button>,
+      <button onClick={redo} disabled={!canRedo} key='redo'>redo</button>,
+    ];
+  }
+
   render() {
     const { gameStatus, innings } = this.props;
     const numInnings = Math.max(innings.length, 9);
@@ -30,6 +50,7 @@ class Game extends Component<StateProps, {}> {
 
     return (
       <React.Fragment>
+        {this.createUndoRedo()}
         <div className="game-status">{gameStatus}</div>
         <div className="game">
           <Lineup />
@@ -41,11 +62,20 @@ class Game extends Component<StateProps, {}> {
   }
 }
 
-function mapStateToProps({ present: state } : { present: AppState }): StateProps {
+function mapStateToProps(fullState: any): StateProps {
+  const state = fullState.present as AppState;
+
   return {
     innings: getPlaysByInning(state),
     gameStatus: getGameStatus(state),
+    canUndo: fullState.past.length > 0,
+    canRedo: fullState.future.length > 0,
   };
 }
 
-export default connect(mapStateToProps)(Game);
+const dispatch = {
+  undo: ActionCreators.undo,
+  redo: ActionCreators.redo,
+};
+
+export default connect(mapStateToProps, dispatch)(Game);
