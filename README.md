@@ -1,44 +1,23 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Interactive baseball scorecard
 
-## Available Scripts
+[![Demo video](https://thumbs.gfycat.com/DeliciousBasicFennecfox-small.gif)](https://gfycat.com/deliciousbasicfennecfox.gif)
 
-In the project directory, you can run:
+This is an interactive version of the common [baseball score card](http://www.baseballscorecard.com/scoring.htm) used by fans to record and track what happens in a game. It is intended to teach fans how to keep score, to be used for fun in lieu of a paper scorecard, and to practice building complex apps in React and Redux.
 
-### `npm start`
+A live version of this project can be found at https://stevenhoward.github.io/
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Technical design
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+The app uses a Redux store (wrapped with redux-undo) to track the home and away team separately. Each team's data consists of a list of Plays and PlayFragments.
 
-### `npm test`
+A Play represents the result of a plate appearance, and is used for storing the statistics that will be credited to the batter (RBIs, hits).
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Each Play contains one or more PlayFragments, which represent the movements of individual runners on the bases. A PlayFragment where the runner advances 0 bases is an out. If a runner's PlayFragments add up to 4, the runner scores.
 
-### `npm run build`
+Plays and PlayFragments are stored in chronological order. A PlayFragment might not correspond to a particular play, e.g. in the case of a stolen base or wild pitch.
 
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
+The project makes extensive use of selectors to display the data and make calculations for new incoming data.
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+## Prior art
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+[Wikipedia](https://en.wikipedia.org/wiki/Baseball_scorekeeping) has a good overview of scorekeeping. Of note is Project Scoresheet, which splits out the data in a slightly different way: events are grouped as either before, during, or after a plate appearance.
