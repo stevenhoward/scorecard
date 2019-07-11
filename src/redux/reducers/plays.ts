@@ -1,37 +1,8 @@
 import { setForActiveTeam } from './util';
-import { ADD_PLAY, CLEAR_FROM } from '../actionTypes';
+import { ADD_PLAY } from '../actionTypes';
 import { AppState, Play, PlayOutcome, PlayFragment, ActionTypes } from '../types';
 
 import { getActiveTeam, getBaseRunners, getTotalBasesByInning, getPlays, getFragments } from '../selectors';
-
-// Given a fragment index, removes everything that happened "after" this point.
-function clearFragmentsFrom(state: AppState, fragmentIndex: number): AppState {
-  let baseIndex = 0;
-
-  const statePlays = getPlays(state);
-
-  // We want to delete in chronological order, but if this is a runner that
-  // might have been forced, we could wind up with the game in an invalid state
-  // (e.g. "2 runners on first"). So make sure we rewind everything that happens
-  // simultaneously.
-  let revisedIndex = fragmentIndex;
-  const [ attachedPlay ] = statePlays.filter(p => p.fragmentIndexes.includes(fragmentIndex));
-  if (attachedPlay) {
-    revisedIndex = Math.min(...attachedPlay.fragmentIndexes);
-  }
-
-  const fragments = getFragments(state).slice(0, revisedIndex);
-
-  // First, remove all fragments bigger than the cutoff from each Play object
-  // Then, remove all Plays with no fragments
-  const plays = statePlays.map(play => ({
-    ...play,
-    fragmentIndexes: play.fragmentIndexes.filter(i => i < revisedIndex),
-  })).filter(play => play.fragmentIndexes.length > 0);
-
-  const teamState = { ...getActiveTeam(state), plays, fragments };
-  return setForActiveTeam(state, teamState);
-}
 
 function computeRbis(state: AppState, newFragments: PlayFragment[]) {
   const basesByInning = getTotalBasesByInning(state);
@@ -130,9 +101,6 @@ export function playReducer(state: AppState, action: ActionTypes): AppState {
   switch(action.type) {
     case ADD_PLAY:
       return addPlay(state, action.payload);
-
-    case CLEAR_FROM:
-      return clearFragmentsFrom(state, action.fragmentIndex);
 
     default:
       return state;

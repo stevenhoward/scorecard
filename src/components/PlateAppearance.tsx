@@ -2,7 +2,7 @@ import React, { Component, CSSProperties, ReactNode } from 'react';
 import { connect } from 'react-redux';
 
 import { AppState, Play, PlayFragment, PlayOutcome } from '../redux/types';
-import { addPlay, clearFrom } from '../redux/actions';
+import { addPlay } from '../redux/actions';
 import { getFragmentsByBatter, getOutsByBatter } from '../redux/selectors';
 
 import SelectFielder from './SelectFielder';
@@ -38,10 +38,7 @@ interface StateProps {
 
 interface DispatchProps {
   //
-  addPlay: (fragment: PlayFragment) => void;
-
-  // User clicks a base in the diagram,
-  clearFrom: (fragmentIndex: number) => void;
+  addPlay: (fragment: PlayOutcome) => void;
 }
 
 type PlateAppearanceProps = OwnProps & StateProps & DispatchProps;
@@ -67,25 +64,16 @@ class PlateAppearance extends Component<PlateAppearanceProps, PlateAppearanceSta
   }
 
   private handleBaseClicked(base: number) {
-    const { legs } = this.props;
+    const { legs, addPlay, index, outNumber } = this.props;
 
-    if (legs.length > base) {
-      this.props.clearFrom(legs[base].fragmentIndex);
-    }
-    else if (base === 0 && this.props.outNumber) {
-      this.props.clearFrom(this.props.fragments[0].fragmentIndex);
-    }
-    else {
-      const addPlay = (outcome: PlayOutcome) => {
-        this.props.addPlay({ runnerIndex: this.props.index, ...outcome, fragmentIndex: -Infinity });
+    if (!outNumber && legs.length <= base) {
+      const addPlayWrap = (outcome: PlayOutcome) => {
+        addPlay({ runnerIndex: index, ...outcome });
         this.closeDialog();
       };
 
       const dialogVisible = true;
-      const dialogContents = <PlaySelector
-        addPlay={addPlay}
-        index={this.props.index}
-        onBase={base !== 0} />;
+      const dialogContents = <PlaySelector addPlay={addPlayWrap} index={index} onBase={base !== 0} />;
 
       this.setState({ dialogVisible, dialogContents });
     }
@@ -146,4 +134,4 @@ function mapStateToProps({ present: state } : { present: AppState }, ownProps: O
   return { fragments, outNumber, ...normalizedProps };
 }
 
-export default connect(mapStateToProps, {addPlay, clearFrom})(PlateAppearance);
+export default connect(mapStateToProps, {addPlay})(PlateAppearance);

@@ -1,17 +1,10 @@
-import { ADD_PLAY, ADD_PLAYER, CLEAR_FROM } from './actionTypes';
-import { AddPlayAction, AddPlayerAction, ClearFromAction, Player, PlayOutcome } from './types';
+import { ADD_PLAY, ADD_PLAYER } from './actionTypes';
+import { AddPlayAction, AddPlayerAction, Player, PlayOutcome } from './types';
 
 export function addPlay(outcome: PlayOutcome): AddPlayAction {
   return {
     type: ADD_PLAY,
     payload: outcome,
-  };
-}
-
-export function clearFrom(fragmentIndex: number): ClearFromAction {
-  return {
-    type: CLEAR_FROM,
-    fragmentIndex,
   };
 }
 

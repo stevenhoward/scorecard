@@ -153,14 +153,9 @@ export interface AddPlayAction {
   payload: PlayOutcome;
 }
 
-export interface ClearFromAction {
-  type: 'CLEAR_FROM';
-  fragmentIndex: number;
-}
-
 export interface AddPlayerAction {
   type: 'ADD_PLAYER';
   player: Player;
 }
 
-export type ActionTypes = AddPlayAction | ClearFromAction | AddPlayerAction;
+export type ActionTypes = AddPlayAction | AddPlayerAction;
