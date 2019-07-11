@@ -28,8 +28,8 @@ function computeRbis(state: AppState, newFragments: PlayFragment[]) {
 }
 
 function addBatterPlay(state: AppState, outcome: PlayOutcome, fragment: PlayFragment) {
-  let plays = getPlays(state);
-  let fragments = getFragments(state);
+  let plays = [...getPlays(state)];
+  let fragments = [...getFragments(state)];
 
   const { handleRunners, hit, label, runnerIndex } = outcome;
   const advancedRunnerLabel = label == 'BB' ? 'BB' : `#${runnerIndex}`;
