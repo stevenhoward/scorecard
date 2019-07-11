@@ -65,8 +65,8 @@ export default function BasePath(props: BasePathProps) {
 
   return (
     <React.Fragment>
-      {baseLine}
       <text x={labelPosition.x} y={labelPosition.y} textAnchor={labelPosition.anchor}>{props.result}</text>
+      {baseLine}
       <rect fillOpacity="0" x={xmin} y={ymin} width={width} height={height} onClick={props.onClick}
         className="base-line-click-target" />
     </React.Fragment>
