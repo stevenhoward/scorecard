@@ -178,7 +178,7 @@ export const OutcomeTypes: PlayOption[] = [
     bases: 0,
     outs: 1,
     noAtBat: true,
-    available: [isBatter, anyRunners],
+    available: [isBatter, anyRunners, ({ outs }) => outs < 2],
     handleRunners: forceRunnersNoOutsThunk(1),
   },
   {
