@@ -143,7 +143,7 @@ export interface TeamState {
 export interface AppState {
   home: TeamState;
   away: TeamState;
-  activeTeam: 'home' | 'away';
+  displayTeam: 'home' | 'away';
 }
 
 /* Action types */
@@ -158,4 +158,8 @@ export interface AddPlayerAction {
   player: Player;
 }
 
-export type ActionTypes = AddPlayAction | AddPlayerAction;
+export interface ToggleDisplayTeamAction {
+  type: 'TOGGLE_DISPLAY_TEAM';
+}
+
+export type ActionTypes = AddPlayAction | AddPlayerAction | ToggleDisplayTeamAction;

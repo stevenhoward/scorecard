@@ -1,8 +1,8 @@
-import { setForActiveTeam } from './util';
+import { setForBattingTeam } from './util';
 import { ADD_PLAY } from '../actionTypes';
 import { AppState, Play, PlayOutcome, PlayFragment, ActionTypes } from '../types';
 
-import { getActiveTeam, getBaseRunners, getTotalBasesByInning, getPlays, getFragments } from '../selectors';
+import { getBaseRunners, getTotalBasesByInning, getPlays, getFragments } from '../selectors';
 
 function computeRbis(state: AppState, newFragments: PlayFragment[]) {
   const basesByInning = getTotalBasesByInning(state);
@@ -52,8 +52,8 @@ function addBatterPlay(state: AppState, outcome: PlayOutcome, fragment: PlayFrag
 
   plays.push({ index: runnerIndex, fragmentIndexes, rbis, hit: !!hit, atBat: !outcome.noAtBat });
 
-  const teamState = { ...getActiveTeam(state), plays, fragments };
-  return setForActiveTeam(state, teamState);
+  const teamState = { plays, fragments };
+  return setForBattingTeam(state, teamState);
 }
 
 function addRunnerPlay(state: AppState, outcome: PlayOutcome, fragment: PlayFragment) : AppState {
@@ -72,8 +72,8 @@ function addRunnerPlay(state: AppState, outcome: PlayOutcome, fragment: PlayFrag
 
   plays = [...plays.slice(0, -1), play];
 
-  const teamState = { ...getActiveTeam(state), plays, fragments };
-  return setForActiveTeam(state, teamState);
+  const teamState = { plays, fragments };
+  return setForBattingTeam(state, teamState);
 }
 
 function addPlay(state: AppState, outcome: PlayOutcome) : AppState {

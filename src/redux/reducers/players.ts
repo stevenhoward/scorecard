@@ -1,16 +1,15 @@
-import { setForActiveTeam } from './util';
-import { getActiveTeam } from '../selectors';
+import { setForBattingTeam } from './util';
 import { AppState, ActionTypes, Player } from '../types';
 import { ADD_PLAYER } from '../actionTypes';
+import { getDisplayTeam } from '../selectors';
 
 function addPlayer(state: AppState, player: Player): AppState {
-  const teamState = getActiveTeam(state);
+  const teamState = getDisplayTeam(state);
   const newTeamState = {
-    ...teamState,
     players: [...teamState.players, player],
   };
 
-  return setForActiveTeam(state, newTeamState);
+  return setForBattingTeam(state, newTeamState);
 }
 
 export function playerReducer(state: AppState, action: ActionTypes): AppState {

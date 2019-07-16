@@ -1,9 +1,10 @@
 // @ts-ignore
 import undoable from 'redux-undo';
+import { ADD_PLAY, TOGGLE_DISPLAY_TEAM } from '../actionTypes';
 import { AppState, ActionTypes, TeamState } from '../types';
 import { playReducer } from './plays';
 import { playerReducer } from './players';
-import { getActiveTeam, getInnings } from '../selectors';
+import { getDisplayTeam, getInnings } from '../selectors';
 
 function initialTeamState() : TeamState {
   return {
@@ -20,7 +21,7 @@ function initialTeamState() : TeamState {
 const initialState: AppState = {
   home: initialTeamState(),
   away: initialTeamState(),
-  activeTeam: 'away',
+  displayTeam: 'away',
 };
 
 function rootReducer(state = initialState, action: ActionTypes): AppState {
@@ -29,9 +30,12 @@ function rootReducer(state = initialState, action: ActionTypes): AppState {
   let newState = playReducer(state, action);
   newState = playerReducer(newState, action);
 
-  if (getInnings(newState).length == existingInnings + 1) {
-    const activeTeam = newState.activeTeam == 'away' ? 'home' : 'away';
-    newState = { ...newState, activeTeam };
+  const endedInning = action.type == ADD_PLAY &&
+    getInnings(newState).length == existingInnings + 1;
+
+  if (endedInning || action.type == TOGGLE_DISPLAY_TEAM) {
+    const displayTeam = newState.displayTeam == 'away' ? 'home' : 'away';
+    newState = { ...newState, displayTeam };
   }
 
   return newState;
