@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import { ActionCreators } from 'redux-undo';
 import { AppState, Play } from '../redux/types';
 import { getGameStatus, getPlaysByInning } from '../redux/selectors';
+import { toggleDisplayTeam } from '../redux/actions';
 import Inning from './Inning';
 import InningStatistics from './InningStatistics';
 import Lineup from './Lineup';
@@ -15,6 +16,7 @@ export interface OwnProps {}
 interface StateProps {
   innings: Play[][];
   gameStatus: string;
+  displayTeam: string;
 
   canUndo: boolean;
   canRedo: boolean;
@@ -23,6 +25,7 @@ interface StateProps {
 interface DispatchProps {
   undo: () => void;
   redo: () => void;
+  toggleDisplayTeam: () => void;
 }
 
 type GameProps = OwnProps & StateProps & DispatchProps;
@@ -31,10 +34,24 @@ class Game extends Component<GameProps, {}> {
   private createUndoRedo() {
     const { canUndo, canRedo, undo, redo } = this.props;
 
-    return [
-      <button onClick={undo} disabled={!canUndo} key='undo'>undo</button>,
-      <button onClick={redo} disabled={!canRedo} key='redo'>redo</button>,
-    ];
+    return (
+      <div>
+        <button onClick={undo} disabled={!canUndo} key='undo'>undo</button>
+        <button onClick={redo} disabled={!canRedo} key='redo'>redo</button>
+      </div>
+    );
+  }
+
+  private createTeamToggle() {
+    const { displayTeam, toggleDisplayTeam } = this.props;
+    const homeStyle: any = { fontWeight: displayTeam == 'home' ? 'bold' : 'normal' };
+    const awayStyle: any = { fontWeight: displayTeam == 'away' ? 'bold' : 'normal' };
+    return (
+      <div>
+        <a href="javascript:void(0)" onClick={toggleDisplayTeam} style={homeStyle}>home </a>
+        <a href="javascript:void(0)" onClick={toggleDisplayTeam} style={awayStyle}>away</a>
+      </div>
+    );
   }
 
   render() {
@@ -50,8 +67,9 @@ class Game extends Component<GameProps, {}> {
 
     return (
       <React.Fragment>
-        {this.createUndoRedo()}
         <div className="game-status">{gameStatus}</div>
+        {this.createUndoRedo()}
+        {this.createTeamToggle()}
         <div className="game">
           <Lineup />
           {inningFragments}
@@ -70,12 +88,14 @@ function mapStateToProps(fullState: any): StateProps {
     gameStatus: getGameStatus(state),
     canUndo: fullState.past.length > 0,
     canRedo: fullState.future.length > 0,
+    displayTeam: state.displayTeam,
   };
 }
 
 const dispatch = {
   undo: ActionCreators.undo,
   redo: ActionCreators.redo,
+  toggleDisplayTeam
 };
 
 export default connect(mapStateToProps, dispatch)(Game);
