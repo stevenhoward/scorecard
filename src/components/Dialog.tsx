@@ -11,27 +11,10 @@ export default function Dialog(props: DialogProps) {
     return null;
   }
 
-  const backdropStyle: CSSProperties = {
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    bottom: 0,
-    right: 0,
-  };
-
-  const foregroundStyle: CSSProperties = {
-    backgroundColor: '#fff',
-    borderRadius: 3,
-    padding: 20,
-    width: 300,
-    minHeight: 300,
-    margin: '0 auto',
-  };
-
   return (
-    <div style={backdropStyle}>
-      <div style={foregroundStyle}>
+    <div className="modal is-active">
+      <div className="modal-background"></div>
+      <div className="modal-content" style={{ backgroundColor: 'white' }}>
         <div>
           {props.children}
         </div>

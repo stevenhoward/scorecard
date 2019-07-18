@@ -1,3 +1,15 @@
+@import "../node_modules/bulma/css/bulma.css";
+
+.play-types fieldset {
+  border: 1px solid rgb(227, 227, 227);
+  padding: 8px;
+  margin: 8px;
+}
+
+.play-types legend {
+  font-weight: bold;
+}
+
 :root {
   --top-row-height: 35px;
   --slot-height: 100px;
