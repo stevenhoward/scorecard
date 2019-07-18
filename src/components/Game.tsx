@@ -34,10 +34,17 @@ class Game extends Component<GameProps, {}> {
   private createUndoRedo() {
     const { canUndo, canRedo, undo, redo } = this.props;
 
+    const undoStyle = { opacity: canUndo ? 1 : 0.5 };
+    const redoStyle = { opacity: canRedo ? 1 : 0.5 };
+
     return (
       <div>
-        <button onClick={undo} disabled={!canUndo} key='undo'>undo</button>
-        <button onClick={redo} disabled={!canRedo} key='redo'>redo</button>
+        <a onClick={undo} key="undo" className="icon" style={undoStyle}>
+          <span className="fas fa-undo"></span>
+        </a>
+        <a onClick={redo} key="redo" className="icon" style={redoStyle}>
+          <span className="fas fa-redo"></span>
+        </a>
       </div>
     );
   }
@@ -47,9 +54,11 @@ class Game extends Component<GameProps, {}> {
     const homeStyle: any = { fontWeight: displayTeam == 'home' ? 'bold' : 'normal' };
     const awayStyle: any = { fontWeight: displayTeam == 'away' ? 'bold' : 'normal' };
     return (
-      <div>
-        <a href="javascript:void(0)" onClick={toggleDisplayTeam} style={homeStyle}>home </a>
-        <a href="javascript:void(0)" onClick={toggleDisplayTeam} style={awayStyle}>away</a>
+      <div className="tabs">
+        <ul>
+          <li><a href="javascript:void(0)" onClick={toggleDisplayTeam} style={homeStyle}>home</a></li>
+          <li><a href="javascript:void(0)" onClick={toggleDisplayTeam} style={awayStyle}>away</a></li>
+          </ul>
       </div>
     );
   }
@@ -70,11 +79,13 @@ class Game extends Component<GameProps, {}> {
         <div className="game-status">{gameStatus}</div>
         {this.createUndoRedo()}
         {this.createTeamToggle()}
-        <div className="game">
-          <Lineup />
-          {inningFragments}
-          <BatterStatistics />
-        </div>
+        <section className="section">
+          <div className="game">
+            <Lineup />
+            {inningFragments}
+            <BatterStatistics />
+          </div>
+        </section>
       </React.Fragment>
     );
   }
