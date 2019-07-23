@@ -158,8 +158,9 @@ export interface AddPlayerAction {
   player: Player;
 }
 
-export interface ToggleDisplayTeamAction {
-  type: 'TOGGLE_DISPLAY_TEAM';
+export interface SetDisplayTeamAction {
+  type: 'SET_DISPLAY_TEAM';
+  team: 'home' | 'away';
 }
 
-export type ActionTypes = AddPlayAction | AddPlayerAction | ToggleDisplayTeamAction;
+export type ActionTypes = AddPlayAction | AddPlayerAction | SetDisplayTeamAction;

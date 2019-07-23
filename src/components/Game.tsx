@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { ActionCreators } from 'redux-undo';
 import { AppState, Play } from '../redux/types';
 import { getGameStatus, getPlaysByInning } from '../redux/selectors';
-import { toggleDisplayTeam } from '../redux/actions';
+import { setDisplayTeam } from '../redux/actions';
 import Inning from './Inning';
 import InningStatistics from './InningStatistics';
 import Lineup from './Lineup';
@@ -25,7 +25,7 @@ interface StateProps {
 interface DispatchProps {
   undo: () => void;
   redo: () => void;
-  toggleDisplayTeam: () => void;
+  setDisplayTeam: (team: 'home' | 'away') => void;
 }
 
 type GameProps = OwnProps & StateProps & DispatchProps;
@@ -50,14 +50,16 @@ class Game extends Component<GameProps, {}> {
   }
 
   private createTeamToggle() {
-    const { displayTeam, toggleDisplayTeam } = this.props;
+    const { displayTeam, setDisplayTeam } = this.props;
     const homeStyle: any = { fontWeight: displayTeam == 'home' ? 'bold' : 'normal' };
     const awayStyle: any = { fontWeight: displayTeam == 'away' ? 'bold' : 'normal' };
     return (
       <div className="tabs">
         <ul>
-          <li><a href="javascript:void(0)" onClick={toggleDisplayTeam} style={homeStyle}>home</a></li>
-          <li><a href="javascript:void(0)" onClick={toggleDisplayTeam} style={awayStyle}>away</a></li>
+          <li><a href="javascript:void(0)"
+              onClick={() => setDisplayTeam('home')} style={homeStyle}>home</a></li>
+          <li><a href="javascript:void(0)"
+              onClick={() => setDisplayTeam('away')} style={awayStyle}>away</a></li>
           </ul>
       </div>
     );
@@ -106,7 +108,7 @@ function mapStateToProps(fullState: any): StateProps {
 const dispatch = {
   undo: ActionCreators.undo,
   redo: ActionCreators.redo,
-  toggleDisplayTeam
+  setDisplayTeam
 };
 
 export default connect(mapStateToProps, dispatch)(Game);
